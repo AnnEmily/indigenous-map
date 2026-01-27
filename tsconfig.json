@@ -1,0 +1,58 @@
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "include": ["src"],          // Only include files within the src directory
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    // File Layout
+    // "rootDir": "./src",
+    // "outDir": "./dist",
+
+    // Environment Settings
+    // See also https://aka.ms/tsconfig/module
+    "module": "esnext",
+    "moduleResolution": "bundler", 
+    "target": "es2015",
+    
+    "types": ["vite/client"],
+    // For nodejs:
+    "lib": ["esnext", "dom"],
+    // "lib": ["es2018", "dom"],
+    // "types": ["node"],
+    // and npm install -D @types/node
+
+    // This is optional but often helps with path resolution
+    "baseUrl": "./",
+
+    // Other Outputs
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    // Stricter Typechecking Options
+    // "noUncheckedIndexedAccess": true,
+    // "exactOptionalPropertyTypes": true,
+
+    // Style Options
+    // "noImplicitReturns": true,
+    // "noImplicitOverride": true,
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    // "noFallthroughCasesInSwitch": true,
+    // "noPropertyAccessFromIndexSignature": true,
+
+    // Recommended Options
+    "strict": false, // Start with relaxed strictness and enable later
+    "noEmit": true, // Tells TypeScript not to generate output files, only perform type checking (your bundler handles the build
+    "allowJs": true, // Allow TypeScript to compile .js and .jsx files
+    "checkJs": false, // Do not type-check .js files initially
+    "allowImportingTsExtensions": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "verbatimModuleSyntax": false, // allows mix of type and components in imports
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true,
+  }
+}

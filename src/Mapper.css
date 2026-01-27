@@ -1,0 +1,48 @@
+.mapper {
+  height: 100vh;
+  /* padding: 8px 16px; */
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+
+  &.dark {
+    background-color: #1D2226;
+  }
+
+  &.light {
+    background-color: #d0d0d0;
+  }
+}
+
+.left-menu {
+  width: 20%;
+  height: 99.75vh;
+  border: 1px solid green;
+}
+
+.map-wrapper {
+  height: 100vh;
+  width: 100%;
+
+  & .coords-control {
+    display: none;
+  }
+
+  &.show-coords .coords-control {
+  display: block;
+}
+}
+
+.map-container {
+  height: 100%;
+  width: 100%;
+}
+
+.coords-control {
+  background: rgba(255, 255, 255, 0.85);
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+  color: black;
+  border: 1px solid red;
+}

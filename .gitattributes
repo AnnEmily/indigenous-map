@@ -1,0 +1,2 @@
+// Ignore following folders in file statistics
+doc/**/*.* linguist-generated
