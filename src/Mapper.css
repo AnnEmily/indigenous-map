@@ -24,13 +24,49 @@
   height: 100vh;
   width: 100%;
 
+  & .custom-marker {
+    /* Container and its children stays hidden until  the
+    parent map-wrapper gets the right class, show-XX */
+    display: none !important; 
+    align-items: center;
+    justify-content: center; 
+    
+    /* uncomment below for debug */
+    /* background: rgba(255, 0, 0, 0.2) !important;
+    outline: 1px solid red; */
+
+    /* Attributes of the visible marker. Size proportional to zoom factor */
+    & .marker-blob {
+      --dynamic-size: calc(6px + (var(--map-zoom) * 0.8px));
+      width: var(--dynamic-size);
+      height: var(--dynamic-size);
+
+      background-color: var(--nation-color);
+      border-radius: 50%;
+      border: 1px solid white;
+      flex-shrink: 0;
+      transition: width 0.1s ease-out, height 0.1s ease-out;
+    }
+  }
+
+  /* Visibility rules. We check if .map-wrapper (represented by &) has
+  the 'show-' class and then set the corresponding child marker. */
+  &.show-abenaki .nation-abenaki,
+  &.show-micmac .nation-micmac,
+  &.show-wolastoqiyik .nation-wolastoqiyik,
+  &.show-cree .nation-cree,
+  &.show-innu .nation-innu {
+    display: flex !important; 
+  }
+
+  /* UI Controls */
   & .coords-control {
     display: none;
   }
 
   &.show-coords .coords-control {
-  display: block;
-}
+    display: block;
+  }
 }
 
 .map-container {

@@ -1,7 +1,8 @@
 import L from "leaflet";
-import { TileProvider } from "../../shared/types";
-import { mapboxIds } from "../../shared/constants";
 
+import { TileProvider } from "../../shared/types";
+import { mapboxIds, nationColorMap } from "../../shared/constants";
+import { geoJson } from "../../data/data";
 
 export const addCoordsControl = (map: L.Map) => {
   const coordsControl = new L.Control({ position: "bottomleft" });
@@ -23,8 +24,32 @@ export const addCoordsControl = (map: L.Map) => {
   });
 };
 
+export const addMarkers = (map: L.Map) => {
+  geoJson.features.forEach(feature => {
+    const { nation, name } = feature.properties;
+    const [lng, lat] = feature.geometry.coordinates;
+    const color = nationColorMap.get(nation);
+
+    // This is the container of the marker, which is styled itself in the CSS.
+    // It acts as a hitbox around the visible marker, eg the area around the
+    // marker that will trigger an onClick event showing popup or else.
+    // The container should be larger than the marker itself to allow room
+    const myIcon = L.divIcon({
+      className: `custom-marker nation-${nation}`,
+      html: `<div class="marker-blob" style="--nation-color: ${color || 'red'};"></div>`,
+      iconSize: [30, 30],
+      iconAnchor: [15, 15],
+      popupAnchor: [0, -10],
+    });
+
+    L.marker([lat, lng], { icon: myIcon })
+      .addTo(map)
+      .bindPopup(`<b>${name}</b>`);
+  });
+};
+
 export const createTileLayer = (tileSource: TileProvider): L.TileLayer => {
-  if (['mbOutdoors', 'mbStreets', 'mbSatellite'].includes(tileSource)) {
+  if (['mbOutdoors', 'mbStreets', 'mbSatellite', 'mbDark'].includes(tileSource)) {
     const token = import.meta.env.VITE_MAPBOX_TOKEN;
 
     return L.tileLayer(

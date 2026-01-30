@@ -1,25 +1,57 @@
 import { create } from 'zustand';
-import { TileProvider } from '../types';
+import { persist } from 'zustand/middleware';
 
-interface MapState {
+import { Nation, TileProvider } from '../types';
+
+interface MapData {
   showCoords: boolean;
   tileSource: TileProvider;
-
-  setTileSource: (_ts: TileProvider)  => void;
-  toggleShowCoords: () => void;
-  resetSolver: () => void;
+  activeNations: Nation[];
 }
 
-export const useMapStore = create<MapState>(set => ({
-  // Initial values
+interface MapActions {
+  setTileSource: (_ts: TileProvider) => void;
+  toggleShowCoords: () => void;
+  updateActiveNations: (_nation: Nation, _add: boolean) => void;
+  resetMap: () => void;
+}
+
+export type MapState = MapData & MapActions;
+
+const initialState: MapData = {
   showCoords: false,
   tileSource: 'osm',
+  activeNations: [],
+};
 
-  // Actions
-  setTileSource: tileSource => set({ tileSource }),
-  toggleShowCoords: () => set(state => ({ showCoords: !state.showCoords })),
+export const useMapStore = create<MapState>()(
+  persist(
+    (set) => ({
+      ...initialState,
 
-  resetSolver: () => set({
-    showCoords: false,
-   }),
-}));
+      setTileSource: tileSource => set({ tileSource }),
+      
+      toggleShowCoords: () => set(state => ({ showCoords: !state.showCoords })),
+
+      updateActiveNations: (nation, add) => {
+        if (add) {
+          set(state => ({ activeNations: [...state.activeNations, nation].sort() }));
+        } else {
+          set(state => ({ activeNations: state.activeNations.filter(n => n !== nation) }));
+        }
+      },
+
+      resetMap: () => set({ ...initialState }),
+    }),
+    {
+      // item name in localStorage
+      name: 'map-settings-storage',
+
+      // Only persist these specific fields on reset
+      partialize: (state) => ({
+        tileSource: state.tileSource,
+        showCoords: state.showCoords,
+      }),
+    }
+  )
+);
