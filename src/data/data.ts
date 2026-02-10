@@ -10,7 +10,7 @@ export const geoJson: FeatureCollection<Shapes , CommunityProperties> = {
         id: 1,
         nation: "micmac",
         name: "Listuguj",
-        states: ["QC", "NB"],
+        states: ["QC"],
         website: "https://listuguj.ca/",
         boundaries: [
           "https://listuguj.ca/wp-content/uploads/2013/07/LMG_PlanBook_6June131.pdf#:~:text=The%20Listuguj%20community%20is%20on%20the%20Gaspe,other%20parts%20of%20Quebec%20and%20New%20Brunswick.",

@@ -1,28 +1,69 @@
-import { Nation, TileProvider } from "./types";
+import { Nation, State, TileProvider } from "./types";
 
-export const mapboxIds = new Map<TileProvider, string>([
-  ['mbOutdoors', 'mapbox/outdoors-v11'],
-  ['mbStreets', 'mapbox/streets-v11'],
-  ['mbSatellite', 'mapbox/satellite-v9'],
-  ['mbDark', 'mapbox/dark-v10'],
-]);
+const providerIdMapping: Record<TileProvider, string> = {
+  mbOutdoors: 'mapbox/outdoors-v11',
+  mbStreets: 'mapbox/streets-v11',
+  mbSatellite: 'mapbox/satellite-v9',
+  mbDark: 'mapbox/dark-v10',
+  osm: '', // Obligatoire pour satisfaire le Record
+};
 
-export const tileSourceNames = new Map<TileProvider, string>([
-  ['osm', 'OpenStreetMap'],
-  ['mbOutdoors', 'Mapbox - Outdoors'],
-  ['mbStreets', 'Mapbox - Streets'],
-  ['mbSatellite', 'Mapbox - Satellite'],
-  ['mbDark', 'Mapbox - Dark'],
-]);
+export const mapboxIds = new Map<TileProvider, string>(
+  Object.entries(providerIdMapping) as [TileProvider, string][]
+);
 
-export const nationColorMap = new Map<Nation, string>([
-  ['abenaki', '#b77739'],
-  ['cree', '#f8Aa3b'],
-  ['innu', '#7E73B5'],
-  ['inuit', '#7dcff5'],
-  ['metis', '#ec24f3'],
-  ['micmac', '#f36f24'],
-  ['mohawk', '#00b1ea'],
-  ['naskapi', '#5EB04C'],
-  ['wolastoqiyik', '#ffdf00'],
-]);
+const tileProviderLabels: Record<TileProvider, string> = {
+  osm: 'OpenStreetMap',
+  mbOutdoors: 'Mapbox - Outdoors',
+  mbStreets: 'Mapbox - Streets',
+  mbSatellite: 'Mapbox - Satellite',
+  mbDark: 'Mapbox - Dark',
+};
+
+export const tileSourceNames = new Map<TileProvider, string>(
+  Object.entries(tileProviderLabels) as [TileProvider, string][]
+);
+
+const nationColors: Record<Nation, string> = {
+  abenaki: '#b77739',
+  cree: '#f8Aa3b',
+  innu: '#7E73B5',
+  inuit: '#7dcff5',
+  metis: '#ec24f3',
+  micmac: '#f36f24',
+  mohawk: '#00b1ea',
+  naskapi: '#5EB04C',
+  wolastoqiyik: '#ffdf00',
+};
+
+export const nationColorMap = new Map<Nation, string>(
+  Object.entries(nationColors) as [Nation, string][]
+);
+
+const stateLabels: Record<State, string> = {
+  QC: 'Québec',
+  NB: 'New Brunswick',
+  NL: 'Newfoundland and Labrador',
+  NS: 'Nova Scotia',
+  NY: 'New York',
+  ON: 'Ontario',
+  PE: 'Prince Edward Island',
+};
+
+export const stateNameMap = new Map<State, string>(
+  Object.entries(stateLabels) as [State, string][]
+);
+
+// Below is to make sure we have an exhaustive list
+// to compute the nationStateMap later on
+export const initialNationStates: Record<Nation, State[]> = {
+  abenaki: [],
+  cree: [],
+  innu: [],
+  inuit: [],
+  metis: [],
+  micmac: [],
+  mohawk: [],
+  naskapi: [],
+  wolastoqiyik: [],
+};

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { Nation, TileProvider } from '../types';
+import { Nation, State, STATES, TileProvider } from '../types';
 
 interface Viewport {
   lat: number;
@@ -13,6 +13,7 @@ interface MapData {
   showCoords: boolean;
   tileSource: TileProvider;
   activeNations: Nation[];
+  activeStates: State[];
   viewport: Viewport;
 }
 
@@ -20,6 +21,7 @@ interface MapActions {
   setTileSource: (_ts: TileProvider) => void;
   toggleShowCoords: () => void;
   updateActiveNations: (_nation: Nation, _add: boolean) => void;
+  updateActiveStates: (_state: State, _add: boolean) => void;
   setViewport: (_v: Viewport) => void;
   resetMap: () => void;
 }
@@ -30,6 +32,7 @@ const initialState: MapData = {
   showCoords: false,
   tileSource: 'osm',
   activeNations: [],
+  activeStates: [...STATES],
   viewport: { lat: 54, lng: -69.7, zoom: 5 }, // QC full, centered in viewport
 };
 
@@ -49,6 +52,14 @@ export const useMapStore = create<MapState>()(
           set(state => ({ activeNations: [...state.activeNations, nation].sort() }));
         } else {
           set(state => ({ activeNations: state.activeNations.filter(n => n !== nation) }));
+        }
+      },
+
+      updateActiveStates: (province, add) => {
+        if (add) {
+          set(state => ({ activeStates: [...state.activeStates, province].sort() }));
+        } else {
+          set(state => ({ activeStates: state.activeStates.filter(n => n !== province) }));
         }
       },
 

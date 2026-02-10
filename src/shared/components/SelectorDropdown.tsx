@@ -7,6 +7,10 @@ const MyAccordion = styled(Accordion)({
     '&.Mui-expanded': {
       margin: 0,
     },
+    
+    '&.MuiAccordion-root': {
+      boxShadow: 'none',
+    },
     '&.MuiAccordion-root:last-of-type': {
       borderRadius: 0,
     },
@@ -23,7 +27,7 @@ const MyAccordion = styled(Accordion)({
   },
   '& .MuiButtonBase-root.MuiAccordionSummary-root': {
     minHeight: '40px',
-    borderBottom: '1px solid #7d7d7d',
+    borderBottom: '1px solid #696969',
   },
   '& .MuiAccordionDetails-root': {
     padding: '8px 8px 8px 14px',

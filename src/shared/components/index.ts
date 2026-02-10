@@ -1,2 +1,1 @@
-export * from './CollapseButton';
-export * from './Panel';
+export * from './SelectorDropdown';

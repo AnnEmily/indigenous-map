@@ -3,7 +3,7 @@ import { useShallow } from "zustand/shallow";
 import L from "leaflet";
 
 import { geoJson } from "../../data/data";
-import { Nation, TileProvider } from "../../shared/types";
+import { Nation, State, TileProvider } from "../../shared/types";
 import { createTileLayer, addCoordsControl, addNationLayers } from "./mapUtils";
 import { useMapStore } from "../../shared/store";
 
@@ -11,6 +11,7 @@ export const useLeafletMap = (
   containerRef: RefObject<HTMLDivElement>,
   tileSource: TileProvider,
   selectedNations: Nation[],
+  selectedStates: State[],
 ) => {
   const mapRef = useRef<L.Map | null>(null);
   const syncRef = useRef<() => void>(() => {});
@@ -27,11 +28,12 @@ export const useLeafletMap = (
 
       // Use the latest selectedNations from the component scope
       const activeNations = selectedNations;
+      const activeStates = selectedStates;
 
       map.eachLayer((layer: any) => {
         if (layer._meta) {
-          const { nationGroup, bounds } = layer._meta;
-          const isSelected = activeNations.includes(nationGroup);
+          const { nation, bounds, states } = layer._meta;
+          const isSelected = activeNations.includes(nation) && activeStates.some(s => states.includes(s)) ;
           
           const nw = map.latLngToLayerPoint(bounds.getNorthWest());
           const se = map.latLngToLayerPoint(bounds.getSouthEast());
@@ -67,7 +69,7 @@ export const useLeafletMap = (
       // Also update the zoom CSS variable
       containerRef.current?.style.setProperty('--map-zoom', map.getZoom().toString());
     };
-  }, [selectedNations, containerRef]);
+  }, [selectedNations, selectedStates, containerRef]);
 
   // Initialize map
   useEffect(() => {
@@ -128,7 +130,7 @@ export const useLeafletMap = (
   // Runs when toggling nation visibility checkboxes
   useEffect(() => {
     syncRef.current();
-  }, [selectedNations]);
+  }, [selectedNations, selectedStates]);
 
   // Swap tile layer when provider changes
   useEffect(() => {

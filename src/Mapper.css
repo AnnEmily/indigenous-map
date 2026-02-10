@@ -15,9 +15,12 @@
 }
 
 .left-menu {
-  width: 20%;
+  width: -webkit-fill-available;
+  max-width: 270px;
   height: 99.75vh;
   border: 1px solid green;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .map-wrapper {
@@ -26,17 +29,9 @@
 
   & .custom-marker {
     display: none !important;
-    /* align-items: center;
-    justify-content: center; */
     transition: opacity 0.4s ease-in-out;
     opacity: 1;
     will-change: opacity, transform;
-
-    /* 1. Give the Leaflet container a fixed, static size */
-    /* width: 20px !important;
-    height: 20px !important;
-    margin-left: -10px !important;
-    margin-top: -10px !important; */
 
     &.zoom-hidden {
       opacity: 0;
@@ -170,5 +165,8 @@
     color: black;
     font-size: 0.95rem;
     user-select: none;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
   }
 }

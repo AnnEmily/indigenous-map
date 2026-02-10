@@ -13,8 +13,18 @@ export const ShowCoordsSelector: FC = () => {
 
   return (
     <FormControlLabel
-      control={ <Checkbox checked={showCoords} onChange={toggleShowCoords} /> }
-      label="Show Lat/Long" />
+      control={
+        <Checkbox checked={showCoords} onChange={toggleShowCoords} size="small"/>
+      }
+      label="Show Lat/Long"
+      className="selector-typography"
+      sx={{
+        margin: 0,
+        '& .MuiButtonBase-root.MuiCheckbox-root' : {
+          padding: '4px',
+        }
+      }}
+    />
   );
 };
 

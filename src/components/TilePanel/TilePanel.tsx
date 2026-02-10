@@ -1,5 +1,6 @@
 import { FC } from "react";
-import { SelectorDropdown } from "../SelectorDropdown";
+
+import { SelectorDropdown } from "../../shared/components/SelectorDropdown";
 import { TileSelectorGroup } from "../TileSelectorGroup";
 
 export const TilePanel: FC = () => {
