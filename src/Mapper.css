@@ -1,6 +1,9 @@
+:root {
+  --menu-bgcolor: #d8d8d8;
+}
+
 .mapper {
   height: 100vh;
-  /* padding: 8px 16px; */
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
@@ -21,6 +24,7 @@
   border: 1px solid green;
   overflow-y: auto;
   overflow-x: hidden;
+  background: var(--menu-bgcolor);
 }
 
 .map-wrapper {
@@ -129,7 +133,6 @@
   &.show-cree .nation-cree,
   &.show-innu .nation-innu {
     display: flex !important;
-    /* display: flex !important; */
   }
 
   /* UI Controls */
@@ -168,5 +171,37 @@
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
+  }
+}
+
+.accordion {
+  &.MuiPaper-root {
+    &.Mui-expanded {
+      margin: 0;
+    } 
+    &.MuiAccordion-root {
+      box-shadow: none;
+    }
+    &.MuiAccordion-root:last-of-type {
+      border-radius: 0;
+    }
+  }
+  & .MuiAccordion-heading {
+    all: inherit;
+    background-color: #8b8b8b;
+  }
+  & .MuiAccordionSummary-content {
+    margin: 0;
+    &.Mui-expanded {
+      margin: 0;
+    }
+  }
+  & .MuiButtonBase-root.MuiAccordionSummary-root {
+    min-height: 40px;
+    border-bottom: 1px solid #696969;
+  }
+  & .MuiAccordionDetails-root {
+    padding: 8px 8px 8px 14px;
+    background: var(--menu-bgcolor);
   }
 }

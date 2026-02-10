@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { Nation, State, STATES, TileProvider } from '../types';
+import { Nation, NATIONS, State, STATES, TileProvider } from '../types';
 
 interface Viewport {
   lat: number;
@@ -30,8 +30,8 @@ export type MapState = MapData & MapActions;
 
 const initialState: MapData = {
   showCoords: false,
-  tileSource: 'osm',
-  activeNations: [],
+  tileSource: 'mbSatellite',
+  activeNations: [...NATIONS],
   activeStates: [...STATES],
   viewport: { lat: 54, lng: -69.7, zoom: 5 }, // QC full, centered in viewport
 };

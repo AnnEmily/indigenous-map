@@ -1,39 +1,6 @@
 import { FC, ReactNode, useState } from "react";
-import { Accordion, AccordionDetails, AccordionSummary, styled, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Typography } from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-
-const MyAccordion = styled(Accordion)({
-  '&.MuiPaper-root': {
-    '&.Mui-expanded': {
-      margin: 0,
-    },
-    
-    '&.MuiAccordion-root': {
-      boxShadow: 'none',
-    },
-    '&.MuiAccordion-root:last-of-type': {
-      borderRadius: 0,
-    },
-  },
-  '& .MuiAccordion-heading': {
-    all: 'inherit',
-    backgroundColor: '#8b8b8b',
-  },
-  '& .MuiAccordionSummary-content': {
-    margin: 0,
-    '&.Mui-expanded': {
-      margin: 0,
-    }
-  },
-  '& .MuiButtonBase-root.MuiAccordionSummary-root': {
-    minHeight: '40px',
-    borderBottom: '1px solid #696969',
-  },
-  '& .MuiAccordionDetails-root': {
-    padding: '8px 8px 8px 14px',
-    background: 'rgb(216, 216, 216)',
-  },
-});
 
 interface SelectorDropdownProps {
   title: string;
@@ -45,7 +12,11 @@ export const SelectorDropdown: FC<SelectorDropdownProps> = ({ title, defaultOpen
   const [openPanel, setOpenPanel] = useState<boolean>(defaultOpen);
 
   return (
-    <MyAccordion expanded={openPanel} onChange={() => setOpenPanel(!openPanel)}>
+    <Accordion
+      expanded={openPanel}
+      onChange={() => setOpenPanel(!openPanel)}
+      className="accordion"
+    >
       <AccordionSummary
         expandIcon={<ExpandMoreIcon />}
         aria-controls="panel1-content"
@@ -56,7 +27,7 @@ export const SelectorDropdown: FC<SelectorDropdownProps> = ({ title, defaultOpen
       <AccordionDetails>
         {children}
       </AccordionDetails>
-    </MyAccordion>
+    </Accordion>
   );
 };
 

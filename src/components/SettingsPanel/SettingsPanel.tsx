@@ -6,7 +6,7 @@ import { ShowCoordsSelector } from "../ShowCoordsSelector";
 export const SettingsPanel: FC = () => {
   
   return (
-    <SelectorDropdown title={"Settings"}>
+    <SelectorDropdown title={"Settings"} defaultOpen>
       <ShowCoordsSelector />
     </SelectorDropdown>
   
