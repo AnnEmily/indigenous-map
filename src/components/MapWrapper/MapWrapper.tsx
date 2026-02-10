@@ -14,7 +14,7 @@ export const MapWrapper: FC = () => {
   })));
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  useLeafletMap(mapContainerRef, tileSource, { lat: 54, long: -69.7 }, 5);
+  useLeafletMap(mapContainerRef, tileSource, activeNations);
 
   const nationClasses = activeNations.map(nation => `show-${nation}`);
   const wrappperClasses = clsx(

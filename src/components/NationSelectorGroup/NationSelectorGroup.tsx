@@ -14,8 +14,7 @@ export const NationSelectorGroup: FC = () => {
   })));
 
   return (
-    <div id="nation-selector-group" style={{ background: '#d8d8d8' }}>
-      <div style={{ color: 'black' }}>{"Nations"}</div>
+    <div id="nation-selector-group">
       <FormControl component="fieldset">
         <FormGroup>
           {[...NATIONS].sort().map(nation => {
@@ -31,22 +30,12 @@ export const NationSelectorGroup: FC = () => {
                   />
                 }
                 label={nation.charAt(0).toUpperCase() + nation.slice(1)}
-                sx={{
-                  width: '100%',
-                  '& .MuiTypography-root' : {
-                    background: nationColorMap.get(nation),
-                    width: '-webkit-fill-available',
-                    paddingInline: '8px',
-                    borderRadius: '4px',
-                    color: 'black',
-                    fontSize: '0.95rem',
-                  }
-                }}
+                className="selector-typography"
+                sx={{ '& .MuiTypography-root' : { background: nationColorMap.get(nation) } }}
               />
             );
           })}
         </FormGroup>
-        {/* <FormHelperText>Be careful</FormHelperText> */}
       </FormControl>
     </div>
   );

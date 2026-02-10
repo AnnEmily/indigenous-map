@@ -2,9 +2,9 @@ import { type FC } from "react";
 import clsx from "clsx";
 
 import '../../Mapper.css';
-import { NationSelectorGroup } from "../NationSelectorGroup";
-import { TileSelectorGroup } from "../TileSelectorGroup";
 import { ShowCoordsSelector } from "../ShowCoordsSelector";
+import { NationPanel } from "../NationPanel";
+import TilePanel from "../TilePanel/TilePanel";
 
 interface LeftMenuProps {
   id?: string;
@@ -16,8 +16,8 @@ export const LeftMenu: FC<LeftMenuProps> = ({ id }) => {
   return (
     <div id={id} className={className}>
         <ShowCoordsSelector />
-        <TileSelectorGroup />
-        <NationSelectorGroup />
+        <TilePanel />
+        <NationPanel />
     </div>
   );
 };

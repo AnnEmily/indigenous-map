@@ -16,8 +16,13 @@ export const tileSourceNames = new Map<TileProvider, string>([
 ]);
 
 export const nationColorMap = new Map<Nation, string>([
-  ['micmac', '#f36f24'],
-  ['cree', '#f8Aa3b'],
-  ['wolastoqiyik', '#ffdf00'],
   ['abenaki', '#b77739'],
+  ['cree', '#f8Aa3b'],
+  ['innu', '#7E73B5'],
+  ['inuit', '#7dcff5'],
+  ['metis', '#ec24f3'],
+  ['micmac', '#f36f24'],
+  ['mohawk', '#00b1ea'],
+  ['naskapi', '#5EB04C'],
+  ['wolastoqiyik', '#ffdf00'],
 ]);

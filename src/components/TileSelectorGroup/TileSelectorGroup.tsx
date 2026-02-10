@@ -1,7 +1,7 @@
 import { type FC } from "react";
 import clsx from "clsx";
 import { useShallow } from "zustand/shallow";
-import { FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from '@mui/material';
+import { FormControl, FormControlLabel, Radio, RadioGroup } from '@mui/material';
 
 import '../../Mapper.css';
 import { useMapStore } from "../../shared/store";
@@ -18,7 +18,6 @@ export const TileSelectorGroup: FC = () => {
 
   return (
     <FormControl className={className}>
-      <FormLabel id="tile-source">{"Tile Source"}</FormLabel>
       <RadioGroup
         aria-labelledby="tile-source"
         value={tileSource}
@@ -29,8 +28,15 @@ export const TileSelectorGroup: FC = () => {
           <FormControlLabel
             key={key}
             value={key}
-            control={<Radio />}
+            control={<Radio size="small" />}
             label={label}
+            className="selector-typography"
+            sx={{
+              margin: 0,
+              '& .MuiButtonBase-root.MuiRadio-root' : {
+                padding: '4px',
+              }
+            }}
           />
         ))}
       </RadioGroup>

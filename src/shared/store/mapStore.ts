@@ -3,16 +3,24 @@ import { persist } from 'zustand/middleware';
 
 import { Nation, TileProvider } from '../types';
 
+interface Viewport {
+  lat: number;
+  lng: number;
+  zoom: number;
+}
+
 interface MapData {
   showCoords: boolean;
   tileSource: TileProvider;
   activeNations: Nation[];
+  viewport: Viewport;
 }
 
 interface MapActions {
   setTileSource: (_ts: TileProvider) => void;
   toggleShowCoords: () => void;
   updateActiveNations: (_nation: Nation, _add: boolean) => void;
+  setViewport: (_v: Viewport) => void;
   resetMap: () => void;
 }
 
@@ -22,6 +30,7 @@ const initialState: MapData = {
   showCoords: false,
   tileSource: 'osm',
   activeNations: [],
+  viewport: { lat: 54, lng: -69.7, zoom: 5 }, // QC full, centered in viewport
 };
 
 export const useMapStore = create<MapState>()(
@@ -31,6 +40,8 @@ export const useMapStore = create<MapState>()(
 
       setTileSource: tileSource => set({ tileSource }),
       
+      setViewport: (viewport) => set({ viewport }),
+
       toggleShowCoords: () => set(state => ({ showCoords: !state.showCoords })),
 
       updateActiveNations: (nation, add) => {
@@ -41,7 +52,7 @@ export const useMapStore = create<MapState>()(
         }
       },
 
-      resetMap: () => set({ ...initialState }),
+      resetMap: () => set(state => ({ ...initialState, viewport: state.viewport })),
     }),
     {
       // item name in localStorage
@@ -51,6 +62,7 @@ export const useMapStore = create<MapState>()(
       partialize: (state) => ({
         tileSource: state.tileSource,
         showCoords: state.showCoords,
+        viewport: state.viewport,
       }),
     }
   )
