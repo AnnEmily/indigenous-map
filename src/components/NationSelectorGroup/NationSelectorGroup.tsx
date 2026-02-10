@@ -26,7 +26,7 @@ export const NationSelectorGroup: FC<NationSelectorGroupProps> = ({ nationStateM
             const isActive = activeNations.includes(nation);
             const isEnabled = activeStates.some(state => nationStateMap.get(nation)?.includes(state));
 
-             // Don't show nations that don't have any active states)
+             // Don't show nations that don't have any active states
             if (!isEnabled) return null;
 
             return (
