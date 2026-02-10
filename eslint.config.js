@@ -33,7 +33,7 @@ export default defineConfig([
     settings: {
       react: {
         version: "detect",
-        jsxRuntime: "automatic", // <-- THIS is the key
+        jsxRuntime: "automatic",
       },
     },
 

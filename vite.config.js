@@ -9,5 +9,5 @@ export default defineConfig({
   build: {
     outDir: 'docs' // Output build to a folder named 'docs'
   },
-  base: '/indigenous_map/', // add this before refs to assets in final URL
+  base: '/indigenous-map/', // add this before refs to assets in final URL
 });
