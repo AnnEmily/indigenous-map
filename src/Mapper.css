@@ -37,10 +37,10 @@
     opacity: 1;
     will-change: opacity, transform;
 
-    &.zoom-hidden {
+    /* &.zoom-hidden {
       opacity: 0;
       pointer-events: none;
-    }
+    } */
 
     & svg {
       /* This scale keeps the dot proportional to zoom without moving its center */
@@ -143,6 +143,14 @@
   &.show-coords .coords-control {
     display: block;
   }
+
+  & .zoom-control {
+    display: none;
+  }
+
+  &.show-zoom .zoom-control {
+    display: block;
+  }
 }
 
 .map-container {
@@ -150,13 +158,18 @@
   width: 100%;
 }
 
-.coords-control {
+.coords-control,
+.zoom-control {
   background: rgba(255, 255, 255, 0.85);
   padding: 4px 8px;
   font-size: 12px;
   border-radius: 4px;
   color: black;
   border: 1px solid red;
+}
+
+.zoom-control {
+  margin-bottom: 5px;
 }
 
 .selector-typography {
@@ -204,4 +217,24 @@
     padding: 8px 8px 8px 14px;
     background: var(--menu-bgcolor);
   }
+}
+
+.custom-cluster-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cluster-blob {
+  width: 36px;
+  height: 36px;
+  background-color: #ff5500; /* Or a neutral color like #444 */
+  border: 3px solid white;
+  border-radius: 50%;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
 }

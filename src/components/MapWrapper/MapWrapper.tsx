@@ -7,10 +7,11 @@ import { useMapStore } from "../../shared/store";
 import { useLeafletMap } from "./useLeafletMap";
 
 export const MapWrapper: FC = () => {
-  const { activeNations, activeStates, showCoords, tileSource } = useMapStore(useShallow(state => ({
+  const { activeNations, activeStates, showCoords, showZoom, tileSource } = useMapStore(useShallow(state => ({
     activeNations: state.activeNations,
     activeStates: state.activeStates,
     showCoords: state.showCoords,
+    showZoom: state.showZoom,
     tileSource: state.tileSource,
   })));
 
@@ -21,6 +22,7 @@ export const MapWrapper: FC = () => {
   const wrappperClasses = clsx(
     "map-wrapper",
     showCoords && "show-coords",
+    showZoom && "show-zoom",
     nationClasses,
   );
 

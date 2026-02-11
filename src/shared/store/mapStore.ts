@@ -11,6 +11,7 @@ interface Viewport {
 
 interface MapData {
   showCoords: boolean;
+  showZoom: boolean;
   tileSource: TileProvider;
   activeNations: Nation[];
   activeStates: State[];
@@ -20,6 +21,7 @@ interface MapData {
 interface MapActions {
   setTileSource: (_ts: TileProvider) => void;
   toggleShowCoords: () => void;
+  toggleShowZoom: () => void;
   updateActiveNations: (_nation: Nation, _add: boolean) => void;
   updateActiveStates: (_state: State, _add: boolean) => void;
   setViewport: (_v: Viewport) => void;
@@ -30,6 +32,7 @@ export type MapState = MapData & MapActions;
 
 const initialState: MapData = {
   showCoords: false,
+  showZoom: false,
   tileSource: 'mbSatellite',
   activeNations: [...NATIONS],
   activeStates: [...STATES],
@@ -46,6 +49,8 @@ export const useMapStore = create<MapState>()(
       setViewport: (viewport) => set({ viewport }),
 
       toggleShowCoords: () => set(state => ({ showCoords: !state.showCoords })),
+
+      toggleShowZoom: () => set(state => ({ showZoom: !state.showZoom })),
 
       updateActiveNations: (nation, add) => {
         if (add) {
@@ -73,6 +78,7 @@ export const useMapStore = create<MapState>()(
       partialize: (state) => ({
         tileSource: state.tileSource,
         showCoords: state.showCoords,
+        showZoom: state.showZoom,
         viewport: state.viewport,
       }),
     }

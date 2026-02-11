@@ -4,7 +4,7 @@ import L from "leaflet";
 
 import { geoJson } from "../../data/data";
 import { Nation, State, TileProvider } from "../../shared/types";
-import { createTileLayer, addCoordsControl, addNationLayers } from "./mapUtils";
+import { createTileLayer, addCoordsControl, addNationLayers, addZoomControl } from "./mapUtils";
 import { useMapStore } from "../../shared/store";
 
 export const useLeafletMap = (
@@ -16,87 +16,124 @@ export const useLeafletMap = (
   const mapRef = useRef<L.Map | null>(null);
   const syncRef = useRef<() => void>(() => {});
   const tileLayerRef = useRef<L.TileLayer | null>(null);
+  const allMarkersRef = useRef<L.Marker[]>([]);
+  const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
 
   const setViewport = useMapStore(state => state.setViewport);
   const savedViewport = useMapStore(useShallow(state => state.viewport));
 
-  // Update the syncing function every time state changes
+  // Helper to handle Polygons (which stay on the map)
+  const processLayer = (layer: any, map: L.Map, nations: string[], states: string[]) => {
+    if (!layer._meta) return;
+
+    const { nation, bounds, states: layerStates } = layer._meta;
+    const isSelected = nations.includes(nation) && states.some(s => layerStates.includes(s));
+
+    const nw = map.latLngToLayerPoint(bounds.getNorthWest());
+    const se = map.latLngToLayerPoint(bounds.getSouthEast());
+    const pixelArea = Math.abs(se.x - nw.x) * Math.abs(se.y - nw.y);
+
+    const THRESHOLD = 2000;
+
+    if (layer instanceof L.GeoJSON) {
+      const shouldShowPoly = isSelected && pixelArea >= THRESHOLD;
+      layer.setStyle({
+        opacity: shouldShowPoly ? 1 : 0,
+        fillOpacity: shouldShowPoly ? 0.3 : 0,
+        interactive: shouldShowPoly
+      });
+    }
+  };
   useEffect(() => {
+    // Update the syncing function every time state changes
     syncRef.current = () => {
       const map = mapRef.current;
-      if (!map) return;
+      const clusterGroup = clusterGroupRef.current;
+      if (!map || !clusterGroup) return;
 
-      // Use the latest selectedNations from the component scope
       const activeNations = selectedNations;
       const activeStates = selectedStates;
+      const THRESHOLD = 2000;
 
-      map.eachLayer((layer: any) => {
-        if (layer._meta) {
-          const { nation, bounds, states } = layer._meta;
-          const isSelected = activeNations.includes(nation) && activeStates.some(s => states.includes(s)) ;
+      // Handle Markers (The Clusters)
+      // We iterate over our MASTER LIST to add/remove from the cluster group
+      allMarkersRef.current.forEach((marker) => {
+        // Cast to any to access our custom _meta property
+        const meta = (marker as any)._meta;
+        if (!meta) return;
+
+        const { nation, states: layerStates, bounds } = meta;
+        
+        const isSelected = activeNations.includes(nation) && activeStates.some(s => layerStates.includes(s));
+
+        if (isSelected) {
+          // Ensure it's in the cluster group so the count is correct
+          if (!clusterGroup.hasLayer(marker)) {
+            clusterGroup.addLayer(marker);
+          }
           
+          // Handle Dot-vs-Polygon swap within the cluster
           const nw = map.latLngToLayerPoint(bounds.getNorthWest());
           const se = map.latLngToLayerPoint(bounds.getSouthEast());
           const pixelArea = Math.abs(se.x - nw.x) * Math.abs(se.y - nw.y);
           
-          const THRESHOLD = 2000;
-          const DELTA = 100;
-
-          if (layer instanceof L.Marker) {
-            const el = layer.getElement();
-            if (el) {
-              const shouldShowPin = isSelected && pixelArea < THRESHOLD + DELTA;
-              if (shouldShowPin) {
-                el.classList.remove('zoom-hidden');
-              } else {
-                el.classList.add('zoom-hidden');
-              }
-            }
+          const shouldShowPin = pixelArea < THRESHOLD;
+          marker.setOpacity(shouldShowPin ? 1 : 0);
+          
+          const el = marker.getElement();
+          if (el) {
+            el.style.pointerEvents = shouldShowPin ? 'auto' : 'none';
           }
-
-          if (layer instanceof L.GeoJSON) {
-            const shouldShowLayer = isSelected && pixelArea >= THRESHOLD - DELTA;
-
-            layer.setStyle({
-              opacity: shouldShowLayer ? 1 : 0,
-              fillOpacity: shouldShowLayer ? 0.3 : 0,
-              interactive: shouldShowLayer // Important for hovering/clicking
-            });
-          }
+        } else {
+          // Physically remove from cluster so the bubble number updates
+          clusterGroup.removeLayer(marker);
         }
       });
-      
-      // Also update the zoom CSS variable
-      containerRef.current?.style.setProperty('--map-zoom', map.getZoom().toString());
+
+      // Handle Polygons (The Map Layers)
+      map.eachLayer((layer) => {
+        if (!(layer instanceof L.Marker)) {
+          processLayer(layer, map, activeNations, activeStates);
+        }
+      });
     };
-  }, [selectedNations, selectedStates, containerRef]);
+  }, [selectedNations, selectedStates]);
 
   // Initialize map
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
     // Initialize Map
-    const map = L.map(containerRef.current).setView(
-      [savedViewport.lat, savedViewport.lng],
-      savedViewport.zoom
-    );
+    const map = L.map(containerRef.current, {
+      center: [savedViewport.lat, savedViewport.lng],
+      zoom: savedViewport.zoom,
+      maxZoom: 18, // this is needed for clustering
+    });
     mapRef.current = map;
 
     // Add Controls/Layers
     addCoordsControl(map);
-    addNationLayers(map, geoJson);
+    addZoomControl(map);
+    
+    const { clusterGroup, allMarkers } = addNationLayers(map, geoJson);
+    clusterGroupRef.current = clusterGroup;
+    allMarkersRef.current = allMarkers;
 
     // Track viewport changes
     const handleMove = () => {
       const center = map.getCenter();
+      const currentZoom = map.getZoom();
+
       setViewport({
         lat: center.lat,
         lng: center.lng,
-        zoom: map.getZoom(),
+        zoom: currentZoom,
       });
     };
 
+    // Update state on significant events
     map.on('moveend', handleMove);
+    map.on('zoomend', handleMove);
     
     // Attach the zoom listener. Call the ref specifically so it always
     // sees the latest logic about showing pins or polygons

@@ -1,5 +1,6 @@
 import { FeatureCollection } from "geojson";
 import L from "leaflet";
+import 'leaflet.markercluster';
 
 import { CommunityProperties, Shapes, TileProvider } from "../../shared/types";
 import { mapboxIds, nationColorMap } from "../../shared/constants";
@@ -24,6 +25,26 @@ export const addCoordsControl = (map: L.Map) => {
   });
 };
 
+export const addZoomControl = (map: L.Map) => {
+  const zoomStr = () => (`Zoom factor: ${map.getZoom()}`);
+  const zoomControl = new L.Control({ position: "bottomleft" });
+
+  zoomControl.onAdd = () => {
+    const div = L.DomUtil.create("div", "zoom-control");
+    div.innerHTML = zoomStr();
+    return div;
+  };
+
+  zoomControl.addTo(map);
+
+  map.on("zoomend", () => {
+    const div = document.querySelector(".zoom-control");
+    if (div) {
+      div.innerHTML = zoomStr();
+    }
+  });
+};
+
 export const addNationLayers = (map: L.Map, data: FeatureCollection<Shapes, CommunityProperties>) => {
   // Global tooltip for the whole map (prevents multiple competing tooltips)
   const globalTooltip = L.tooltip({
@@ -34,11 +55,31 @@ export const addNationLayers = (map: L.Map, data: FeatureCollection<Shapes, Comm
     permanent: false
   });
 
+  // Initialize the cluster group
+  const clusterGroup = L.markerClusterGroup({
+    showCoverageOnHover: false,
+    maxClusterRadius: 45, // increase to make clustering more "aggressive"
+    spiderfyOnMaxZoom: true,
+    disableClusteringAtZoom: 6, // stop clustering when zoomed in enough
+
+    iconCreateFunction: (cluster) => {
+      // This styles the cluster circle
+      const count = cluster.getChildCount();
+      return L.divIcon({
+        html: `<div class="cluster-blob"><span>${count}</span></div>`,
+        className: 'custom-cluster-icon',
+        iconSize: L.point(40, 40),
+      });
+    }
+  });
+
   map.on('mousemove', (e: L.LeafletMouseEvent) => {
     if (globalTooltip.isOpen()) {
       globalTooltip.setLatLng(e.latlng);
     }
   });
+
+  const markersArray: L.Marker[] = [];
 
   data.features.forEach((feature) => {
     const { id, nation, name, states } = feature.properties;
@@ -68,7 +109,7 @@ export const addNationLayers = (map: L.Map, data: FeatureCollection<Shapes, Comm
       const firstIslandBounds = L.latLngBounds(latLngs[0]);
       
       center = firstIslandBounds.getCenter();
-      visibilityBounds = firstIslandBounds; // We use THIS for the swap trigger
+      visibilityBounds = firstIslandBounds; // We use this for the swap trigger
 
       // We still need the FULL bounds for the map to know where the whole nation is
       const fullFeatureLayer = L.geoJSON(feature);
@@ -124,17 +165,20 @@ export const addNationLayers = (map: L.Map, data: FeatureCollection<Shapes, Comm
       bounds: visibilityBounds,
       states: states || []
     };
+
+    markersArray.push(marker);
     (polygonLayer as any)._meta = metadata;
     (marker as any)._meta = metadata;
 
+    // Add layers to map
     polygonLayer.addTo(map);
-
-    // if (feature.geometry.type === "MultiPolygon") {
-    //   console.log(`Checking ${name}:`, { center, boundsValid: bounds.isValid() });
-    // }
-
-    marker.addTo(map);
+    clusterGroup.addLayer(marker);
   });
+
+  // Add the whole cluster group to the map at once
+  map.addLayer(clusterGroup);
+
+  return { clusterGroup, allMarkers: markersArray };
 };
 
 export const createTileLayer = (tileSource: TileProvider): L.TileLayer => {

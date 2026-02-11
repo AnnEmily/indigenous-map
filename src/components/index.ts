@@ -4,6 +4,5 @@ export * from "./NationPanel";
 export * from "./TilePanel";
 export * from "./TileSelectorGroup";
 export * from "./SettingsPanel";
-export * from "./ShowCoordsSelector";
 export * from "./StatePanel";
 export * from "./StateSelectorGroup";
