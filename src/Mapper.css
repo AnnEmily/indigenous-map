@@ -37,11 +37,6 @@
     opacity: 1;
     will-change: opacity, transform;
 
-    /* &.zoom-hidden {
-      opacity: 0;
-      pointer-events: none;
-    } */
-
     & svg {
       /* This scale keeps the dot proportional to zoom without moving its center */
       transform: scale(calc(0.5 + (var(--map-zoom) * 0.05)));
@@ -123,15 +118,15 @@
   /* Visibility rules. We check if .map-wrapper (represented by &) has
   the 'show-' class and then set the corresponding child marker. */
   &.show-abenaki .nation-abenaki,
-  &.show-inuit .nation-inuit,
+  &.show-cree .nation-cree,
   &.show-innu .nation-innu,
+  &.show-inuit .nation-inuit,
   &.show-metis .nation-metis,
   &.show-micmac .nation-micmac,
   &.show-mohawk .nation-mohawk,
   &.show-naskapi .nation-naskapi,
-  &.show-wolastoqiyik .nation-wolastoqiyik,
-  &.show-cree .nation-cree,
-  &.show-innu .nation-innu {
+  &.show-wolastoqiyik .nation-wolastoqiyik
+  {
     display: flex !important;
   }
 
@@ -226,10 +221,10 @@
 }
 
 .cluster-blob {
-  width: 36px;
-  height: 36px;
-  background-color: #ff5500; /* Or a neutral color like #444 */
-  border: 3px solid white;
+  width: 30px;
+  height: 30px;
+  background-color: #444; /* neutral color to represent many nations */
+  border: 2px solid white;
   border-radius: 50%;
   color: white;
   font-weight: bold;
@@ -237,4 +232,10 @@
   align-items: center;
   justify-content: center;
   box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  transition: background-color 0.3s ease, transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.1);
+    filter: brightness(1.1);
+  }
 }

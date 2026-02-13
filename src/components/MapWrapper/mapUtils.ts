@@ -3,7 +3,7 @@ import L from "leaflet";
 import 'leaflet.markercluster';
 
 import { CommunityProperties, Shapes, TileProvider } from "../../shared/types";
-import { mapboxIds, nationColorMap } from "../../shared/constants";
+import { DISABLE_CLUSTERING_AT_ZOOM, mapboxIds, MAX_CLUSTER_RADIUS, MIN_PIXEL_AREA, nationColorMap } from "../../shared/constants";
 
 export const addCoordsControl = (map: L.Map) => {
   const coordsControl = new L.Control({ position: "bottomleft" });
@@ -58,15 +58,37 @@ export const addNationLayers = (map: L.Map, data: FeatureCollection<Shapes, Comm
   // Initialize the cluster group
   const clusterGroup = L.markerClusterGroup({
     showCoverageOnHover: false,
-    maxClusterRadius: 45, // increase to make clustering more "aggressive"
+    maxClusterRadius: MAX_CLUSTER_RADIUS, // increase to make clustering more "aggressive"
     spiderfyOnMaxZoom: true,
-    disableClusteringAtZoom: 6, // stop clustering when zoomed in enough
+    disableClusteringAtZoom: DISABLE_CLUSTERING_AT_ZOOM, // stop clustering when zoomed in enough
 
     iconCreateFunction: (cluster) => {
-      // This styles the cluster circle
+      const markers = cluster.getAllChildMarkers();
+
+      // Get unique nations from the markers in this cluster
+      const nationsInCluster = new Set(
+        markers.map(m => (m as any)._meta.nation)
+      );
+
+      // Cluster color: gray (or whatever set in css) for mixed nations,
+      // otherwise as nation color if it represents a single one
+      let bgProp: string = null;
+      const isSingleNation = nationsInCluster.size === 1;
+
+      if (isSingleNation) {
+        const nationName = Array.from(nationsInCluster)[0];
+        const clusterColor = nationColorMap.get(nationName);
+        bgProp = `background-color: ${clusterColor};`;
+      }
+
       const count = cluster.getChildCount();
+
       return L.divIcon({
-        html: `<div class="cluster-blob"><span>${count}</span></div>`,
+        html: `
+          <div class="cluster-blob" style="${bgProp}; border-color: white;">
+            <span>${count}</span>
+          </div>
+        `,
         className: 'custom-cluster-icon',
         iconSize: L.point(40, 40),
       });
@@ -204,3 +226,24 @@ export const createTileLayer = (tileSource: TileProvider): L.TileLayer => {
     maxZoom: 19,
   });
 };
+
+export const processLayer = (layer: any, map: L.Map, nations: string[], states: string[]) => {
+    if (!layer._meta) return;
+
+    // Handle polygons visibility
+    const { nation, bounds, states: layerStates } = layer._meta;
+    const isSelected = nations.includes(nation) && states.some(s => layerStates.includes(s));
+
+    const nw = map.latLngToLayerPoint(bounds.getNorthWest());
+    const se = map.latLngToLayerPoint(bounds.getSouthEast());
+    const pixelArea = Math.abs(se.x - nw.x) * Math.abs(se.y - nw.y);
+
+    if (layer instanceof L.GeoJSON) {
+      const shouldShowPoly = isSelected && pixelArea >= MIN_PIXEL_AREA;
+      layer.setStyle({
+        opacity: shouldShowPoly ? 1 : 0,
+        fillOpacity: shouldShowPoly ? 0.3 : 0,
+        interactive: shouldShowPoly
+      });
+    }
+  };

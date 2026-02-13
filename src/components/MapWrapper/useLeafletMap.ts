@@ -3,15 +3,12 @@ import { useShallow } from "zustand/shallow";
 import L from "leaflet";
 
 import { geoJson } from "../../data/data";
-import { Nation, State, TileProvider } from "../../shared/types";
-import { createTileLayer, addCoordsControl, addNationLayers, addZoomControl } from "./mapUtils";
+import { createTileLayer, addCoordsControl, addNationLayers, addZoomControl, processLayer } from "./mapUtils";
 import { useMapStore } from "../../shared/store";
+import { MIN_PIXEL_AREA } from "../../shared/constants";
 
 export const useLeafletMap = (
   containerRef: RefObject<HTMLDivElement>,
-  tileSource: TileProvider,
-  selectedNations: Nation[],
-  selectedStates: State[],
 ) => {
   const mapRef = useRef<L.Map | null>(null);
   const syncRef = useRef<() => void>(() => {});
@@ -22,99 +19,28 @@ export const useLeafletMap = (
   const setViewport = useMapStore(state => state.setViewport);
   const savedViewport = useMapStore(useShallow(state => state.viewport));
 
-  // Helper to handle Polygons (which stay on the map)
-  const processLayer = (layer: any, map: L.Map, nations: string[], states: string[]) => {
-    if (!layer._meta) return;
+  const { activeNations, activeStates, tileSource } = useMapStore(useShallow(state => ({
+    activeNations: state.activeNations,
+    activeStates: state.activeStates,
+    tileSource: state.tileSource,
+  })));
 
-    const { nation, bounds, states: layerStates } = layer._meta;
-    const isSelected = nations.includes(nation) && states.some(s => layerStates.includes(s));
-
-    const nw = map.latLngToLayerPoint(bounds.getNorthWest());
-    const se = map.latLngToLayerPoint(bounds.getSouthEast());
-    const pixelArea = Math.abs(se.x - nw.x) * Math.abs(se.y - nw.y);
-
-    const THRESHOLD = 2000;
-
-    if (layer instanceof L.GeoJSON) {
-      const shouldShowPoly = isSelected && pixelArea >= THRESHOLD;
-      layer.setStyle({
-        opacity: shouldShowPoly ? 1 : 0,
-        fillOpacity: shouldShowPoly ? 0.3 : 0,
-        interactive: shouldShowPoly
-      });
-    }
-  };
-  useEffect(() => {
-    // Update the syncing function every time state changes
-    syncRef.current = () => {
-      const map = mapRef.current;
-      const clusterGroup = clusterGroupRef.current;
-      if (!map || !clusterGroup) return;
-
-      const activeNations = selectedNations;
-      const activeStates = selectedStates;
-      const THRESHOLD = 2000;
-
-      // Handle Markers (The Clusters)
-      // We iterate over our MASTER LIST to add/remove from the cluster group
-      allMarkersRef.current.forEach((marker) => {
-        // Cast to any to access our custom _meta property
-        const meta = (marker as any)._meta;
-        if (!meta) return;
-
-        const { nation, states: layerStates, bounds } = meta;
-        
-        const isSelected = activeNations.includes(nation) && activeStates.some(s => layerStates.includes(s));
-
-        if (isSelected) {
-          // Ensure it's in the cluster group so the count is correct
-          if (!clusterGroup.hasLayer(marker)) {
-            clusterGroup.addLayer(marker);
-          }
-          
-          // Handle Dot-vs-Polygon swap within the cluster
-          const nw = map.latLngToLayerPoint(bounds.getNorthWest());
-          const se = map.latLngToLayerPoint(bounds.getSouthEast());
-          const pixelArea = Math.abs(se.x - nw.x) * Math.abs(se.y - nw.y);
-          
-          const shouldShowPin = pixelArea < THRESHOLD;
-          marker.setOpacity(shouldShowPin ? 1 : 0);
-          
-          const el = marker.getElement();
-          if (el) {
-            el.style.pointerEvents = shouldShowPin ? 'auto' : 'none';
-          }
-        } else {
-          // Physically remove from cluster so the bubble number updates
-          clusterGroup.removeLayer(marker);
-        }
-      });
-
-      // Handle Polygons (The Map Layers)
-      map.eachLayer((layer) => {
-        if (!(layer instanceof L.Marker)) {
-          processLayer(layer, map, activeNations, activeStates);
-        }
-      });
-    };
-  }, [selectedNations, selectedStates]);
-
-  // Initialize map
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
-    // Initialize Map
+    // Initialize the map
     const map = L.map(containerRef.current, {
       center: [savedViewport.lat, savedViewport.lng],
       zoom: savedViewport.zoom,
       maxZoom: 18, // this is needed for clustering
     });
+
     mapRef.current = map;
 
-    // Add Controls/Layers
+    // Add controls + layers
     addCoordsControl(map);
     addZoomControl(map);
-    
+
     const { clusterGroup, allMarkers } = addNationLayers(map, geoJson);
     clusterGroupRef.current = clusterGroup;
     allMarkersRef.current = allMarkers;
@@ -164,15 +90,67 @@ export const useLeafletMap = (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Runs when toggling nation visibility checkboxes
   useEffect(() => {
-    syncRef.current();
-  }, [selectedNations, selectedStates]);
+    // Update the syncing function every time state changes
+    syncRef.current = () => {
+      const map = mapRef.current;
+      const clusterGroup = clusterGroupRef.current;
 
-  // Swap tile layer when provider changes
+      if (!map || !clusterGroup) return;
+
+      // Handle Markers (The Clusters)
+      // We iterate over our MASTER LIST to add/remove from the cluster group
+      allMarkersRef.current.forEach((marker) => {
+        // Cast to any to access our custom _meta property
+        const meta = (marker as any)._meta;
+        if (!meta) return;
+
+        const { nation, states: layerStates, bounds } = meta;
+        
+        const isSelected = activeNations.includes(nation) && activeStates.some(s => layerStates.includes(s));
+
+        if (isSelected) {
+          // Ensure it's in the cluster group so the count is correct
+          if (!clusterGroup.hasLayer(marker)) {
+            clusterGroup.addLayer(marker);
+          }
+          
+          // Handle Dot-vs-Polygon swap within the cluster
+          const nw = map.latLngToLayerPoint(bounds.getNorthWest());
+          const se = map.latLngToLayerPoint(bounds.getSouthEast());
+          const pixelArea = Math.abs(se.x - nw.x) * Math.abs(se.y - nw.y);
+          
+          const shouldShowPin = pixelArea < MIN_PIXEL_AREA;
+          marker.setOpacity(shouldShowPin ? 1 : 0);
+          
+          const el = marker.getElement();
+          if (el) {
+            el.style.pointerEvents = shouldShowPin ? 'auto' : 'none';
+          }
+        } else {
+          // Physically remove from cluster so the bubble number updates
+          clusterGroup.removeLayer(marker);
+        }
+      });
+
+      // Handle Polygons (The Map Layers)
+      map.eachLayer((layer) => {
+        if (!(layer instanceof L.Marker)) {
+          processLayer(layer, map, activeNations, activeStates);
+        }
+      });
+    };
+  }, [activeNations, activeStates]);
+
+  useEffect(() => {
+    // Runs when toggling nation or state visibility checkboxes
+    syncRef.current();
+  }, [activeNations, activeStates]);
+
   useEffect(() => {
     if (!mapRef.current) return;
 
+    // Swap tile layer when provider changes
     if (tileLayerRef.current) {
       mapRef.current.removeLayer(tileLayerRef.current);
     }

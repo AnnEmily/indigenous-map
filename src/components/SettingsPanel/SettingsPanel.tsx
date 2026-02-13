@@ -5,17 +5,18 @@ import { useMapStore } from "../../shared/store";
 import { CheckboxSelector, SelectorDropdown } from "../../shared/components";
 
 export const SettingsPanel: FC = () => {
-    const { showCoords, showZoom, toggleShowCoords, toggleShowZooom } = useMapStore(useShallow(state => ({
+    const state = useMapStore(useShallow(state => ({
       showCoords: state.showCoords,
       showZoom: state.showZoom,
+      viewport: state.viewport,
       toggleShowCoords: state.toggleShowCoords,
       toggleShowZooom: state.toggleShowZoom,
     })));
   
   return (
     <SelectorDropdown title={"Settings"} defaultOpen>
-      <CheckboxSelector label="Show Lat/Long" checked={showCoords} onToggle={toggleShowCoords} />
-      <CheckboxSelector label="Show zoom factor" checked={showZoom} onToggle={toggleShowZooom} />
+      <CheckboxSelector label="Show Lat/Long" checked={state.showCoords} onToggle={state.toggleShowCoords} />
+      <CheckboxSelector label="Show zoom factor" checked={state.showZoom} onToggle={state.toggleShowZooom} />
     </SelectorDropdown>
   
   );

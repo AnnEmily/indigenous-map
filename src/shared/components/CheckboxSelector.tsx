@@ -8,13 +8,19 @@ interface CheckboxSelectorProps {
   label: string;
   checked: boolean;
   onToggle: () => void;
+  disabled?: boolean;
 }
 
-export const CheckboxSelector: FC<CheckboxSelectorProps> = ({ label, checked, onToggle }) => {
+export const CheckboxSelector: FC<CheckboxSelectorProps> = ({
+  label,
+  checked,
+  onToggle,
+  disabled = false
+}) => {
   return (
     <FormControlLabel
       control={
-        <Checkbox checked={checked} onChange={onToggle} size="small"/>
+        <Checkbox checked={checked} onChange={onToggle} size="small" disabled={disabled} />
       }
       label={label}
       className="selector-typography"

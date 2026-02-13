@@ -9,8 +9,6 @@ import { NationSelectorGroup } from "../NationSelectorGroup";
 
 const nationStateMap = new Map<Nation, State[]>(
   (() => {
-    console.log("🛠️ Initialisation de nationStateMap à partir du GeoJSON");
-    
     const record = geoJson.features.reduce((acc, feature) => {
       const { nation, states } = feature.properties as { nation: Nation; states: State[] };
       acc[nation] = Array.from(new Set([...acc[nation], ...states]));

@@ -10,11 +10,11 @@ interface Viewport {
 }
 
 interface MapData {
+  activeNations: Nation[];
+  activeStates: State[];
   showCoords: boolean;
   showZoom: boolean;
   tileSource: TileProvider;
-  activeNations: Nation[];
-  activeStates: State[];
   viewport: Viewport;
 }
 

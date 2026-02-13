@@ -1,5 +1,11 @@
 import { Nation, State, TileProvider } from "./types";
 
+// Minimum area in pixels to display a polygon instead of a pin on hte map
+export const MIN_PIXEL_AREA = 2000;
+// Clustering parameters
+export const DISABLE_CLUSTERING_AT_ZOOM = 6;
+export const MAX_CLUSTER_RADIUS = 45;
+
 const providerIdMapping: Record<TileProvider, string> = {
   mbOutdoors: 'mapbox/outdoors-v11',
   mbStreets: 'mapbox/streets-v11',
@@ -33,7 +39,7 @@ const nationColors: Record<Nation, string> = {
   micmac: '#f36f24',
   mohawk: '#00b1ea',
   naskapi: '#5EB04C',
-  wolastoqiyik: '#ffdf00',
+  wolastoqiyik: '#b79f00',
 };
 
 export const nationColorMap = new Map<Nation, string>(
