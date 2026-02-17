@@ -12,6 +12,7 @@ interface Viewport {
 interface MapData {
   activeNations: Nation[];
   activeStates: State[];
+  showConvexHulls: boolean;
   showCoords: boolean;
   showZoom: boolean;
   tileSource: TileProvider;
@@ -20,6 +21,7 @@ interface MapData {
 
 interface MapActions {
   setTileSource: (_ts: TileProvider) => void;
+  toggleShowConvexHulls: () => void;
   toggleShowCoords: () => void;
   toggleShowZoom: () => void;
   updateActiveNations: (_nation: Nation, _add: boolean) => void;
@@ -31,6 +33,7 @@ interface MapActions {
 export type MapState = MapData & MapActions;
 
 const initialState: MapData = {
+  showConvexHulls: false,
   showCoords: false,
   showZoom: false,
   tileSource: 'mbSatellite',
@@ -47,6 +50,8 @@ export const useMapStore = create<MapState>()(
       setTileSource: tileSource => set({ tileSource }),
       
       setViewport: (viewport) => set({ viewport }),
+
+      toggleShowConvexHulls: () => set(state => ({ showConvexHulls: !state.showConvexHulls })),
 
       toggleShowCoords: () => set(state => ({ showCoords: !state.showCoords })),
 

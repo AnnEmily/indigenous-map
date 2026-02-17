@@ -39,6 +39,7 @@ const nationColors: Record<Nation, string> = {
   micmac: '#f36f24',
   mohawk: '#00b1ea',
   naskapi: '#5EB04C',
+  wendat: '#c44444',
   wolastoqiyik: '#b79f00',
 };
 
@@ -71,5 +72,6 @@ export const initialNationStates: Record<Nation, State[]> = {
   micmac: [],
   mohawk: [],
   naskapi: [],
+  wendat: [],
   wolastoqiyik: [],
 };

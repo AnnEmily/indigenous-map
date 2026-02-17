@@ -1,8 +1,9 @@
-import { FeatureCollection } from "geojson";
+import { Feature, FeatureCollection, Position } from "geojson";
 import L from "leaflet";
+import * as turf from '@turf/turf';
 import 'leaflet.markercluster';
 
-import { CommunityProperties, Shapes, TileProvider } from "../../shared/types";
+import { GeoJson, Nation, TileProvider } from "../../shared/types";
 import { DISABLE_CLUSTERING_AT_ZOOM, mapboxIds, MAX_CLUSTER_RADIUS, MIN_PIXEL_AREA, nationColorMap } from "../../shared/constants";
 
 export const addCoordsControl = (map: L.Map) => {
@@ -45,7 +46,7 @@ export const addZoomControl = (map: L.Map) => {
   });
 };
 
-export const addNationLayers = (map: L.Map, data: FeatureCollection<Shapes, CommunityProperties>) => {
+export const addNationLayers = (map: L.Map, data: GeoJson) => {
   // Global tooltip for the whole map (prevents multiple competing tooltips)
   const globalTooltip = L.tooltip({
     sticky: false,
@@ -203,6 +204,93 @@ export const addNationLayers = (map: L.Map, data: FeatureCollection<Shapes, Comm
   return { clusterGroup, allMarkers: markersArray };
 };
 
+export const closeGeoJsonRings = (data: GeoJson): GeoJson => {
+  data.features.forEach(f => {
+    const geom = f.geometry;
+
+    if (geom.type === "Polygon") {
+      geom.coordinates = geom.coordinates.map(ring => {
+        const first = ring[0];
+        const last = ring[ring.length - 1];
+        if (first[0] !== last[0] || first[1] !== last[1]) {
+          return [...ring, first]; // append first coordinate at the end
+        }
+        return ring;
+      });
+    }
+
+    if (geom.type === "MultiPolygon") {
+      geom.coordinates = geom.coordinates.map(poly =>
+        poly.map(ring => {
+          const first = ring[0];
+          const last = ring[ring.length - 1];
+          if (first[0] !== last[0] || first[1] !== last[1]) {
+            return [...ring, first];
+          }
+          return ring;
+        })
+      );
+    }
+  });
+
+  return data;
+};
+
+export function computeNationHulls(geoJson: FeatureCollection): Map<Nation, L.Polygon> {
+  const grouped = new Map<Nation, Feature[]>();
+
+  geoJson.features.forEach((feature) => {
+    const nation = feature.properties.nation;
+    if (!grouped.has(nation)) grouped.set(nation, []);
+    grouped.get(nation)!.push(feature);
+  });
+
+  const result = new Map<Nation, L.Polygon>();
+
+  grouped.forEach((features, nation) => {
+    if (features.length < 3) return;
+
+    const points = features.map(f => {
+      if (f.geometry.type === "MultiPolygon") {
+        const firstPolygon = f.geometry.coordinates[0];
+        return turf.centroid(turf.polygon(firstPolygon));
+      }
+
+      if (f.geometry.type === "Polygon") {
+        return turf.centroid(f);
+      }
+
+      if (f.geometry.type === "Point") {
+        return turf.point(f.geometry.coordinates);
+      }
+
+      return null;
+    }).filter(Boolean);
+
+    const fc = turf.featureCollection(points as any);
+    const hull = turf.convex(fc);
+
+    if (!hull) return;
+
+    const coords = hull.geometry.coordinates[0].map(
+      ([lng, lat]) => [lat, lng]
+    );
+
+    const leafletPolygon = L.polygon(coords as any, { // AEG as any unsure
+      color: nationColorMap.get(nation),
+      fillColor: nationColorMap.get(nation),
+      weight: 2,
+      opacity: 0.8,
+      fillOpacity: 0.25,
+      interactive: false
+    });
+
+    result.set(nation, leafletPolygon);
+  });
+
+  return result;
+};
+
 export const createTileLayer = (tileSource: TileProvider): L.TileLayer => {
   if (['mbOutdoors', 'mbStreets', 'mbSatellite', 'mbDark'].includes(tileSource)) {
     const token = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -227,23 +315,87 @@ export const createTileLayer = (tileSource: TileProvider): L.TileLayer => {
   });
 };
 
-export const processLayer = (layer: any, map: L.Map, nations: string[], states: string[]) => {
-    if (!layer._meta) return;
+export function getClosedCoords(latLngs: L.LatLng[]): [number, number][] {
+  const coords: [number, number][] = latLngs.map(ll => [ll.lng, ll.lat]);
+  const first = coords[0];
+  const last = coords[coords.length - 1];
 
-    // Handle polygons visibility
-    const { nation, bounds, states: layerStates } = layer._meta;
-    const isSelected = nations.includes(nation) && states.some(s => layerStates.includes(s));
+  if (!last || first[0] !== last[0] || first[1] !== last[1]) {
+    coords.push(first);
+  }
 
-    const nw = map.latLngToLayerPoint(bounds.getNorthWest());
-    const se = map.latLngToLayerPoint(bounds.getSouthEast());
-    const pixelArea = Math.abs(se.x - nw.x) * Math.abs(se.y - nw.y);
+  return coords;
+}
 
-    if (layer instanceof L.GeoJSON) {
-      const shouldShowPoly = isSelected && pixelArea >= MIN_PIXEL_AREA;
+export const processPolygonsLayer = (
+  layer: any,
+  map: L.Map,
+  nations: string[],
+  states: string[],
+  isHullMode: boolean,
+) => {
+  if (!layer._meta) return;
+
+  // Handle polygons visibility
+  const { nation, bounds, states: layerStates } = layer._meta;
+  const isSelected = nations.includes(nation) && states.some(s => layerStates.includes(s));
+
+  const nw = map.latLngToLayerPoint(bounds.getNorthWest());
+  const se = map.latLngToLayerPoint(bounds.getSouthEast());
+  const pixelArea = Math.abs(se.x - nw.x) * Math.abs(se.y - nw.y);
+
+  // Hull mode override
+  if (layer instanceof L.GeoJSON) {
+    if (isHullMode) {
       layer.setStyle({
-        opacity: shouldShowPoly ? 1 : 0,
-        fillOpacity: shouldShowPoly ? 0.3 : 0,
-        interactive: shouldShowPoly
+        opacity: 0,
+        fillOpacity: 0,
+        interactive: false
+      });
+      return;
+    }
+
+    // Normal polygon logic
+    const shouldShowPoly = isSelected && pixelArea >= MIN_PIXEL_AREA;
+
+    layer.setStyle({
+      opacity: shouldShowPoly ? 1 : 0,
+      fillOpacity: shouldShowPoly ? 0.3 : 0,
+      interactive: shouldShowPoly
+    });
+  }
+};
+
+export const sanityCheckGeoJson = (data: GeoJson) => {
+  // Sanity check of data: flag open rings
+  data.features.forEach((f) => {
+    const geom = f.geometry;
+
+    if (geom.type === "Polygon") {
+      // Wrap Polygon coordinates for uniform MultiPolygon-like iteration
+      const polygons: Position[][][] = [geom.coordinates];
+
+      polygons.forEach((poly, i) => {
+        poly.forEach((ring, j) => {
+          const first = ring[0];
+          const last = ring[ring.length - 1];
+          if (first[0] !== last[0] || first[1] !== last[1]) {
+            console.warn(`Open ring found in feature ${f.properties.id}, polygon ${i}, ring ${j}`);
+          }
+        });
       });
     }
-  };
+
+    if (geom.type === "MultiPolygon") {
+      geom.coordinates.forEach((poly, i) => {
+        poly.forEach((ring, j) => {
+          const first = ring[0];
+          const last = ring[ring.length - 1];
+          if (first[0] !== last[0] || first[1] !== last[1]) {
+            console.warn(`Open ring found in feature ${f.properties.id}, polygon ${i}, ring ${j}`);
+          }
+        });
+      });
+    }
+  });
+};

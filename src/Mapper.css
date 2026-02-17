@@ -125,6 +125,7 @@
   &.show-micmac .nation-micmac,
   &.show-mohawk .nation-mohawk,
   &.show-naskapi .nation-naskapi,
+  &.show-wendat .nation-wendat,
   &.show-wolastoqiyik .nation-wolastoqiyik
   {
     display: flex !important;
@@ -146,6 +147,15 @@
   &.show-zoom .zoom-control {
     display: block;
   }
+}
+
+.nation-label div {
+  font-weight: bold;
+  font-size: 14px;
+  color: white;
+  text-shadow: 0 0 3px black;
+  pointer-events: none; /* ensures map interactions pass through */
+  text-align: center;
 }
 
 .map-container {

@@ -8,7 +8,7 @@ export type Coords = {
 export const TILE_PROVIDERS = ['osm', 'mbStreets', 'mbOutdoors', 'mbDark', 'mbSatellite'] as const;
 export type TileProvider = typeof TILE_PROVIDERS[number];
 
-export const NATIONS = ['abenaki', 'innu', 'inuit', 'metis', 'micmac', 'mohawk', 'naskapi', 'wolastoqiyik', 'cree'] as const;
+export const NATIONS = ['abenaki', 'cree', 'innu', 'inuit', 'metis', 'micmac', 'mohawk', 'naskapi', 'wolastoqiyik', 'wendat'] as const;
 export type Nation = typeof NATIONS[number];
 
 export const STATES = ['QC', 'NB', 'NL', 'NS', 'NY', 'ON', 'PE'] as const;
