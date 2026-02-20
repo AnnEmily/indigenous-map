@@ -1,4 +1,4 @@
-import { MultiPolygon, Point, Polygon } from "geojson";
+import { FeatureCollection, MultiPolygon, Point, Polygon } from "geojson";
 
 export type Coords = {
   lat: number;
@@ -25,3 +25,5 @@ export type CommunityProperties = {
   website?: string;
   boundaries?: string[];
 };
+
+export type GeoJson = FeatureCollection<Shapes, CommunityProperties>;

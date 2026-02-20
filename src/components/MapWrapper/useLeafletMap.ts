@@ -17,7 +17,7 @@ import {
 } from "./mapUtils";
 import { Nation } from "../../shared/types";
 import { useMapStore } from "../../shared/store";
-import { MIN_PIXEL_AREA } from "../../shared/constants";
+import { MIN_PIXEL_AREA, nationColorMap } from "../../shared/constants";
 
 export const useLeafletMap = (
   containerRef: RefObject<HTMLDivElement>,
@@ -86,19 +86,20 @@ export const useLeafletMap = (
       const turfHull = turf.polygon([coords]);
       const centroid = turf.centroid(turfHull).geometry.coordinates; // [lng, lat]
       const labelLatLng = L.latLng(centroid[1], centroid[0]);
+      const nationColor = nationColorMap.get(nation);
 
       // Create a non-interactive label marker
       const label = L.marker(labelLatLng, {
         icon: L.divIcon({
           className: 'nation-label',
-          html: `<div>${nation}</div>`,
+          html: `<div style="color:${nationColor}">${nation}</div>`,
           iconSize: [100, 20],
           iconAnchor: [50, 10],
         }),
         interactive: false
       });
 
-      label.addTo(map); // initially invisible
+      label.addTo(map);
       label.setOpacity(0);
 
       hullLabels.set(nation, label);

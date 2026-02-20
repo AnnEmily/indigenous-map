@@ -157,9 +157,11 @@ export const addNationLayers = (map: L.Map, data: GeoJson) => {
         iconSize: [24, 24],
         iconAnchor: [12, 12],
         html: `
-          <svg width="24" height="24" viewBox="0 0 24 24" style="display: block;">
-            <circle cx="12" cy="12" r="8" fill="${color}" stroke="white" stroke-width="2" />
-          </svg>
+          <div aria-label="${feature.properties.name}">
+            <svg width="24" height="24" viewBox="0 0 24 24" style="display: block;">
+              <circle cx="12" cy="12" r="8" fill="${color}" stroke="white" stroke-width="2" />
+            </svg>
+          </div>
         `
       })
     });
@@ -209,26 +211,14 @@ export const closeGeoJsonRings = (data: GeoJson): GeoJson => {
     const geom = f.geometry;
 
     if (geom.type === "Polygon") {
-      geom.coordinates = geom.coordinates.map(ring => {
-        const first = ring[0];
-        const last = ring[ring.length - 1];
-        if (first[0] !== last[0] || first[1] !== last[1]) {
-          return [...ring, first]; // append first coordinate at the end
-        }
-        return ring;
-      });
+      geom.coordinates = geom.coordinates.map(ring =>
+        isOpenRing(ring) ? [...ring, ring[0]] : ring
+      );
     }
 
     if (geom.type === "MultiPolygon") {
-      geom.coordinates = geom.coordinates.map(poly =>
-        poly.map(ring => {
-          const first = ring[0];
-          const last = ring[ring.length - 1];
-          if (first[0] !== last[0] || first[1] !== last[1]) {
-            return [...ring, first];
-          }
-          return ring;
-        })
+      geom.coordinates = geom.coordinates.map(poly => poly.map(ring =>
+        isOpenRing(ring) ? [...ring, ring[0]] : ring)
       );
     }
   });
@@ -317,15 +307,14 @@ export const createTileLayer = (tileSource: TileProvider): L.TileLayer => {
 
 export function getClosedCoords(latLngs: L.LatLng[]): [number, number][] {
   const coords: [number, number][] = latLngs.map(ll => [ll.lng, ll.lat]);
-  const first = coords[0];
-  const last = coords[coords.length - 1];
-
-  if (!last || first[0] !== last[0] || first[1] !== last[1]) {
-    coords.push(first);
-  }
-
-  return coords;
+  return isOpenRing(coords) ? [...coords, coords[0]] : coords;
 }
+
+export const isOpenRing = (ring: Position[]): boolean => {
+  const first = ring[0];
+  const last = ring[ring.length - 1];
+  return first[0] !== last[0] || first[1] !== last[1];
+};
 
 export const processPolygonsLayer = (
   layer: any,
@@ -367,34 +356,28 @@ export const processPolygonsLayer = (
 };
 
 export const sanityCheckGeoJson = (data: GeoJson) => {
-  // Sanity check of data: flag open rings
-  data.features.forEach((f) => {
-    const geom = f.geometry;
+  // Sanity check: flag open rings in raw data
+
+  const warnForOpenRing = (poly: Position[][], polyId: number, featureId: number) => {
+    poly.forEach((ring, ringId: number) => {
+      if (isOpenRing(ring)) {
+        console.warn(`Open ring found in feature ${featureId}, polygon ${polyId}, ring ${ringId}`);
+      }
+    });
+  };
+
+  data.features.forEach(feature => {
+    const geom = feature.geometry;
 
     if (geom.type === "Polygon") {
-      // Wrap Polygon coordinates for uniform MultiPolygon-like iteration
-      const polygons: Position[][][] = [geom.coordinates];
-
-      polygons.forEach((poly, i) => {
-        poly.forEach((ring, j) => {
-          const first = ring[0];
-          const last = ring[ring.length - 1];
-          if (first[0] !== last[0] || first[1] !== last[1]) {
-            console.warn(`Open ring found in feature ${f.properties.id}, polygon ${i}, ring ${j}`);
-          }
-        });
+      [geom.coordinates].forEach((polygon, i) => {
+        warnForOpenRing(polygon, i, feature.properties.id);
       });
     }
 
     if (geom.type === "MultiPolygon") {
-      geom.coordinates.forEach((poly, i) => {
-        poly.forEach((ring, j) => {
-          const first = ring[0];
-          const last = ring[ring.length - 1];
-          if (first[0] !== last[0] || first[1] !== last[1]) {
-            console.warn(`Open ring found in feature ${f.properties.id}, polygon ${i}, ring ${j}`);
-          }
-        });
+      geom.coordinates.forEach((polygons, i) => {
+        warnForOpenRing(polygons, i, feature.properties.id);
       });
     }
   });

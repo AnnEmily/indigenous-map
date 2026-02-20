@@ -33,7 +33,7 @@ export const tileSourceNames = new Map<TileProvider, string>(
 const nationColors: Record<Nation, string> = {
   abenaki: '#b77739',
   cree: '#f8Aa3b',
-  innu: '#7E73B5',
+  innu: '#7a69d3',
   inuit: '#7dcff5',
   metis: '#ec24f3',
   micmac: '#f36f24',

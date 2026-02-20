@@ -156,6 +156,10 @@
   text-shadow: 0 0 3px black;
   pointer-events: none; /* ensures map interactions pass through */
   text-align: center;
+
+  &::first-letter {
+    text-transform: uppercase;
+  }
 }
 
 .map-container {

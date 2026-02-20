@@ -16,6 +16,7 @@ export const SelectorDropdown: FC<SelectorDropdownProps> = ({ title, defaultOpen
       expanded={openPanel}
       onChange={() => setOpenPanel(!openPanel)}
       className="accordion"
+      aria-label={title}
     >
       <AccordionSummary
         expandIcon={<ExpandMoreIcon />}

@@ -9,7 +9,7 @@ interface LeftMenuProps {
 
 export const LeftMenu: FC<LeftMenuProps> = ({ id }) => {
   return (
-    <div id={id} className="left-menu">
+    <div id={id} className="left-menu" aria-label="Main menu">
       <SettingsPanel />
       <TilePanel />
       <StatePanel />
