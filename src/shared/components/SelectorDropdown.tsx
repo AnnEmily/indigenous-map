@@ -1,20 +1,31 @@
-import { FC, ReactNode, useState } from "react";
+import { FC, ReactNode } from "react";
+import { useShallow } from "zustand/shallow";
 import { Accordion, AccordionDetails, AccordionSummary, Typography } from "@mui/material";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
+import { useMapStore } from "../../shared/store";
+import { Panel } from "../../shared/types";
+import { panelNames } from "../constants";
+
 interface SelectorDropdownProps {
-  title: string;
-  defaultOpen?: boolean;
+  panelId: Panel;
   children: ReactNode;
 }
 
-export const SelectorDropdown: FC<SelectorDropdownProps> = ({ title, defaultOpen = false, children }) => {
-  const [openPanel, setOpenPanel] = useState<boolean>(defaultOpen);
+export const SelectorDropdown: FC<SelectorDropdownProps> = ({ panelId, children }) => {
+  const { openPanel, updateOpenedPanels } = useMapStore(useShallow(state => ({
+      openPanel: state.openPanels.includes(panelId),
+      updateOpenedPanels: state.updateOpenedPanels,
+    })));
+  
+  // AEG
+  console.log(panelId);
+  const title = panelNames.get(panelId);
 
   return (
     <Accordion
       expanded={openPanel}
-      onChange={() => setOpenPanel(!openPanel)}
+      onChange={() => updateOpenedPanels(panelId, !openPanel)}
       className="accordion"
       aria-label={title}
     >

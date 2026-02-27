@@ -16,7 +16,7 @@ export const SettingsPanel: FC = () => {
     })));
   
   return (
-    <SelectorDropdown title={"Settings"} defaultOpen={false}>
+    <SelectorDropdown panelId="settings">
       <CheckboxSelector label="Show Lat/Long" checked={state.showCoords} onToggle={state.toggleShowCoords} />
       <CheckboxSelector label="Show zoom factor" checked={state.showZoom} onToggle={state.toggleShowZooom} />
       <CheckboxSelector label="Show areas" checked={state.showConvexHulls} onToggle={state.toggleShowConvexHulls} />

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { Nation, NATIONS, State, STATES, TileProvider } from '../types';
+import { Nation, NATIONS, Panel, State, STATES, TileProvider } from '../types';
 
 interface Viewport {
   lat: number;
@@ -12,6 +12,7 @@ interface Viewport {
 interface MapData {
   activeNations: Nation[];
   activeStates: State[];
+  openPanels: Panel[];
   showConvexHulls: boolean;
   showCoords: boolean;
   showZoom: boolean;
@@ -24,8 +25,9 @@ interface MapActions {
   toggleShowConvexHulls: () => void;
   toggleShowCoords: () => void;
   toggleShowZoom: () => void;
-  updateActiveNations: (_nation: Nation, _add: boolean) => void;
-  updateActiveStates: (_state: State, _add: boolean) => void;
+  updateActiveNations: (_nation: Nation[], _add: boolean) => void;
+  updateActiveStates: (_state: State[], _add: boolean) => void;
+  updateOpenedPanels: (_panel: Panel, _open: boolean) => void;
   setViewport: (_v: Viewport) => void;
   resetMap: () => void;
 }
@@ -39,6 +41,7 @@ const initialState: MapData = {
   tileSource: 'mbSatellite',
   activeNations: [...NATIONS],
   activeStates: [...STATES],
+  openPanels: ['nations', 'stateFilter', 'tileSource'],
   viewport: { lat: 54, lng: -69.7, zoom: 5 }, // QC full, centered in viewport
 };
 
@@ -57,19 +60,27 @@ export const useMapStore = create<MapState>()(
 
       toggleShowZoom: () => set(state => ({ showZoom: !state.showZoom })),
 
-      updateActiveNations: (nation, add) => {
+      updateActiveNations: (nations, add) => {
         if (add) {
-          set(state => ({ activeNations: [...state.activeNations, nation].sort() }));
+          set(state => ({ activeNations: [...new Set([...state.activeNations, ...nations])].sort() }));
         } else {
-          set(state => ({ activeNations: state.activeNations.filter(n => n !== nation) }));
+          set(state => ({ activeNations: state.activeNations.filter(n => !nations.includes(n)) }));
         }
       },
 
-      updateActiveStates: (province, add) => {
+      updateActiveStates: (provinces, add) => {
         if (add) {
-          set(state => ({ activeStates: [...state.activeStates, province].sort() }));
+          set(state => ({ activeStates: [...new Set([...state.activeStates, ...provinces])].sort() }));
         } else {
-          set(state => ({ activeStates: state.activeStates.filter(n => n !== province) }));
+          set(state => ({ activeStates: state.activeStates.filter(s => !provinces.includes(s)) }));
+        }
+      },
+
+      updateOpenedPanels: (panel, open) => {
+        if (open) {
+          set(state => ({ openPanels: [...state.openPanels, panel] }));
+        } else {
+          set(state => ({ openPanels: state.openPanels.filter(p => p !== panel) }));
         }
       },
 
@@ -81,6 +92,7 @@ export const useMapStore = create<MapState>()(
 
       // Only persist these specific fields on reset
       partialize: (state) => ({
+        openPanels: state.openPanels,
         tileSource: state.tileSource,
         showCoords: state.showCoords,
         showZoom: state.showZoom,

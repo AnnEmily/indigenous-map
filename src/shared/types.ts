@@ -5,6 +5,9 @@ export type Coords = {
   long: number;
 };
 
+export const PANELS = ['settings', 'tileSource', 'stateFilter', 'nations'] as const;
+export type Panel = typeof PANELS[number];
+
 export const TILE_PROVIDERS = ['osm', 'mbStreets', 'mbOutdoors', 'mbDark', 'mbSatellite'] as const;
 export type TileProvider = typeof TILE_PROVIDERS[number];
 

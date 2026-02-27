@@ -22,7 +22,7 @@ const nationStateMap = new Map<Nation, State[]>(
 export const NationPanel: FC = () => {
   
   return (
-    <SelectorDropdown title={"Indian Nations"} defaultOpen>
+    <SelectorDropdown panelId="nations">
       <NationSelectorGroup nationStateMap={nationStateMap} />
     </SelectorDropdown>
   

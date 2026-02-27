@@ -6,7 +6,7 @@ import { StateSelectorGroup } from "../../components";
 export const StatePanel: FC = () => {
   
   return (
-    <SelectorDropdown title={"State Filter"} defaultOpen>
+    <SelectorDropdown panelId="stateFilter">
       <StateSelectorGroup />
     </SelectorDropdown>
   

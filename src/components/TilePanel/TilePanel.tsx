@@ -6,7 +6,7 @@ import { TileSelectorGroup } from "../TileSelectorGroup";
 export const TilePanel: FC = () => {
   
   return (
-    <SelectorDropdown title={"Map Source"} defaultOpen>
+    <SelectorDropdown panelId="tileSource">
       <TileSelectorGroup />
     </SelectorDropdown>
   
