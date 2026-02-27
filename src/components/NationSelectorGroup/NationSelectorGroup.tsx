@@ -1,4 +1,5 @@
 import { type FC } from "react";
+import { intersection } from "lodash";
 import { useShallow } from "zustand/shallow";
 import { Checkbox, FormControl, FormControlLabel, FormGroup, styled } from '@mui/material';
 
@@ -23,9 +24,17 @@ export const NationSelectorGroup: FC<NationSelectorGroupProps> = ({ nationStateM
     updateActiveNations: state.updateActiveNations,
   })));
 
-    const allSelected = activeNations.length === NATIONS.length;
-    const allUnselected = activeNations.length === 0;
+  // Get nations of visible provinces/states
+  const allowedNations = NATIONS.filter(nation => intersection(nationStateMap.get(nation), activeStates).length > 0 );
+
+  const allSelected = allowedNations.every(nation => activeNations.includes(nation));
+  const allUnselected = allowedNations.every(nation => !activeNations.includes(nation));
   
+  // console.log('activeNations  = ' + activeNations);
+  // console.log('allowedNations = ' + allowedNations);
+  // console.log('allSelected    = ' + allSelected);
+  // console.log('allUnselected  = ' + allUnselected);
+
   return (
     <div id="nation-selector-group">
       <FormControl component="fieldset">
@@ -41,17 +50,12 @@ export const NationSelectorGroup: FC<NationSelectorGroupProps> = ({ nationStateM
             }
           />
 
-          {[...NATIONS].sort().map(nation => {
+          {allowedNations.sort().map(nation => {
             const isActive = activeNations.includes(nation);
-            const isEnabled = activeStates.some(state => nationStateMap.get(nation)?.includes(state));
-
-             // Don't show nations that don't have any active states
-            if (!isEnabled) return null;
 
             return (
               <FormControlLabel
                 key={nation}
-                disabled={!isEnabled}
                 control={
                   <MyCheckbox
                     checked={isActive}

@@ -17,9 +17,7 @@ export const SelectorDropdown: FC<SelectorDropdownProps> = ({ panelId, children 
       openPanel: state.openPanels.includes(panelId),
       updateOpenedPanels: state.updateOpenedPanels,
     })));
-  
-  // AEG
-  console.log(panelId);
+
   const title = panelNames.get(panelId);
 
   return (
