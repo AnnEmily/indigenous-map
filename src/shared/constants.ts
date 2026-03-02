@@ -1,5 +1,7 @@
 import { Nation, Panel, State, TileProvider } from "./types";
 
+// Minimum area in pixels to display a polygon instead of a pin on the map
+export const MIN_PIXEL_AREA = 2000;
 // Clustering parameters
 export const DISABLE_CLUSTERING_AT_ZOOM = 6;
 export const MAX_CLUSTER_RADIUS = 45;

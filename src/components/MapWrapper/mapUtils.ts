@@ -4,7 +4,7 @@ import * as turf from '@turf/turf';
 import 'leaflet.markercluster';
 
 import { GeoJson, Nation, TileProvider } from "../../shared/types";
-import { DISABLE_CLUSTERING_AT_ZOOM, mapboxIds, MAX_CLUSTER_RADIUS, nationColorMap } from "../../shared/constants";
+import { DISABLE_CLUSTERING_AT_ZOOM, mapboxIds, MAX_CLUSTER_RADIUS, MIN_PIXEL_AREA, nationColorMap } from "../../shared/constants";
 
 export const addCoordsControl = (map: L.Map) => {
   const coordsControl = new L.Control({ position: "bottomleft" });
@@ -322,7 +322,7 @@ export const processPolygonsLayer = (
   nations: string[],
   states: string[],
   isHullMode: boolean,
-  polygonThreshold: number,
+  forcePolygons: boolean,
 ) => {
   if (!layer._meta) return;
 
@@ -346,6 +346,7 @@ export const processPolygonsLayer = (
     }
 
     // Normal polygon logic
+    const polygonThreshold = forcePolygons ? 0 : MIN_PIXEL_AREA;
     const shouldShowPoly = isSelected && pixelArea >= polygonThreshold;
 
     layer.setStyle({

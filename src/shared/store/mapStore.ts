@@ -13,7 +13,7 @@ interface MapData {
   activeNations: Nation[];
   activeStates: State[];
   openPanels: Panel[];
-  polygonThreshold: number; // Minimum area in pixels to display a polygon instead of a pin on the map
+  forcePolygons: boolean;
   showConvexHulls: boolean;
   showCoords: boolean;
   showZoom: boolean;
@@ -22,10 +22,10 @@ interface MapData {
 }
 
 interface MapActions {
-  setPolygonThreshold: (_pixArea: number) => void;
   setTileSource: (_ts: TileProvider) => void;
   toggleShowConvexHulls: () => void;
   toggleShowCoords: () => void;
+  toggleForcePolygons: () => void;
   toggleShowZoom: () => void;
   updateActiveNations: (_nation: Nation[], _add: boolean) => void;
   updateActiveStates: (_state: State[], _add: boolean) => void;
@@ -39,12 +39,12 @@ export type MapState = MapData & MapActions;
 const initialState: MapData = {
   showConvexHulls: false,
   showCoords: false,
+  forcePolygons: false,
   showZoom: false,
   tileSource: 'mbSatellite',
   activeNations: [...NATIONS],
   activeStates: [...STATES],
   openPanels: ['nations', 'stateFilter', 'tileSource'],
-  polygonThreshold: 2000,
   viewport: { lat: 54, lng: -69.7, zoom: 5 }, // QC full, centered in viewport
 };
 
@@ -53,13 +53,13 @@ export const useMapStore = create<MapState>()(
     (set) => ({
       ...initialState,
 
-      setPolygonThreshold: pixArea => set(({ polygonThreshold: pixArea })),
-
       setTileSource: tileSource => set({ tileSource }),
       
       setViewport: (viewport) => set({ viewport }),
 
       toggleShowConvexHulls: () => set(state => ({ showConvexHulls: !state.showConvexHulls })),
+
+      toggleForcePolygons: () => set(state => ({ forcePolygons: !state.forcePolygons })),
 
       toggleShowCoords: () => set(state => ({ showCoords: !state.showCoords })),
 

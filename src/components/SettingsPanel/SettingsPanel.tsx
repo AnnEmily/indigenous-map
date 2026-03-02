@@ -7,12 +7,12 @@ import { CheckboxSelector, SelectorDropdown } from "../../shared/components";
 
 export const SettingsPanel: FC = () => {
     const state = useMapStore(useShallow(state => ({
-      polygonThreshold: state.polygonThreshold,
+      forcePolygons: state.forcePolygons,
       showConvexHulls: state.showConvexHulls,
       showCoords: state.showCoords,
       showZoom: state.showZoom,
       viewport: state.viewport,
-      setPoygonThreshold: state.setPolygonThreshold,
+      toggleForcePolygons: state.toggleForcePolygons,
       toggleShowConvexHulls: state.toggleShowConvexHulls,
       toggleShowCoords: state.toggleShowCoords,
       toggleShowZooom: state.toggleShowZoom,
@@ -23,8 +23,9 @@ export const SettingsPanel: FC = () => {
       <CheckboxSelector label="Show Lat/Long" checked={state.showCoords} onToggle={state.toggleShowCoords} />
       <CheckboxSelector label="Show zoom factor" checked={state.showZoom} onToggle={state.toggleShowZooom} />
       <CheckboxSelector label="Show nations spread" checked={state.showConvexHulls} onToggle={state.toggleShowConvexHulls} />
+      <CheckboxSelector label="Force community polygons" checked={state.forcePolygons} onToggle={state.toggleForcePolygons} />
 
-      <div style={{ display: 'flex', flexDirection: 'column', paddingInline: '14px', border: '1px solid gray', borderRadius: '8px', marginTop: '6px' }}>
+      {/* <div style={{ display: 'flex', flexDirection: 'column', paddingInline: '14px', border: '1px solid gray', borderRadius: '8px', marginTop: '6px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginTop: '6px' }}>
           <div>{"Polygons"}</div>
           <div>{"Dots"}</div>
@@ -48,7 +49,7 @@ export const SettingsPanel: FC = () => {
             }}
           />
         </div>
-      </div>
+      </div> */}
     </SelectorDropdown>
   
   );
