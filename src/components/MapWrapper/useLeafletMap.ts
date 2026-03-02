@@ -17,7 +17,7 @@ import {
 } from "./mapUtils";
 import { Nation } from "../../shared/types";
 import { useMapStore } from "../../shared/store";
-import { MIN_PIXEL_AREA, nationColorMap } from "../../shared/constants";
+import { nationColorMap } from "../../shared/constants";
 
 export const useLeafletMap = (
   containerRef: RefObject<HTMLDivElement>,
@@ -30,6 +30,7 @@ export const useLeafletMap = (
   const hullLayersRef = useRef<Map<Nation, L.Polygon>>(new Map());
   const hullLabelRef = useRef<Map<Nation, L.Marker>>(new Map());
 
+  const polygonThreshold = useMapStore(useShallow(state => state.polygonThreshold));
   const setViewport = useMapStore(state => state.setViewport);
   const savedViewport = useMapStore(useShallow(state => state.viewport));
 
@@ -193,7 +194,7 @@ export const useLeafletMap = (
             const se = map.latLngToLayerPoint(bounds.getSouthEast());
             const pixelArea = Math.abs(se.x - nw.x) * Math.abs(se.y - nw.y);
             
-            const shouldShowPin = pixelArea < MIN_PIXEL_AREA;
+            const shouldShowPin = pixelArea < polygonThreshold;
             marker.setOpacity(shouldShowPin ? 1 : 0);
             
             const el = marker.getElement();
@@ -217,7 +218,7 @@ export const useLeafletMap = (
       // Enable or not polygons visibility
       map.eachLayer((layer) => {
         if (!(layer instanceof L.Marker)) {
-          processPolygonsLayer(layer, map, activeNations, activeStates, showConvexHulls);
+          processPolygonsLayer(layer, map, activeNations, activeStates, showConvexHulls, polygonThreshold);
         }
       });
 
@@ -242,12 +243,12 @@ export const useLeafletMap = (
       });
 
     };
-  }, [activeNations, activeStates, viewport.zoom, showConvexHulls]);
+  }, [activeNations, activeStates, polygonThreshold, viewport.zoom, showConvexHulls]);
 
   useEffect(() => {
     // Runs when toggling nation or state visibility checkboxes
     syncRef.current();
-  }, [activeNations, activeStates, showConvexHulls]);
+  }, [activeNations, activeStates, showConvexHulls, polygonThreshold]);
 
   useEffect(() => {
     if (!mapRef.current) return;

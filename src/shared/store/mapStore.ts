@@ -13,6 +13,7 @@ interface MapData {
   activeNations: Nation[];
   activeStates: State[];
   openPanels: Panel[];
+  polygonThreshold: number; // Minimum area in pixels to display a polygon instead of a pin on the map
   showConvexHulls: boolean;
   showCoords: boolean;
   showZoom: boolean;
@@ -21,6 +22,7 @@ interface MapData {
 }
 
 interface MapActions {
+  setPolygonThreshold: (_pixArea: number) => void;
   setTileSource: (_ts: TileProvider) => void;
   toggleShowConvexHulls: () => void;
   toggleShowCoords: () => void;
@@ -42,6 +44,7 @@ const initialState: MapData = {
   activeNations: [...NATIONS],
   activeStates: [...STATES],
   openPanels: ['nations', 'stateFilter', 'tileSource'],
+  polygonThreshold: 2000,
   viewport: { lat: 54, lng: -69.7, zoom: 5 }, // QC full, centered in viewport
 };
 
@@ -49,6 +52,8 @@ export const useMapStore = create<MapState>()(
   persist(
     (set) => ({
       ...initialState,
+
+      setPolygonThreshold: pixArea => set(({ polygonThreshold: pixArea })),
 
       setTileSource: tileSource => set({ tileSource }),
       

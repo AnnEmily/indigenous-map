@@ -1,7 +1,5 @@
 import { Nation, Panel, State, TileProvider } from "./types";
 
-// Minimum area in pixels to display a polygon instead of a pin on the map
-export const MIN_PIXEL_AREA = 2000;
 // Clustering parameters
 export const DISABLE_CLUSTERING_AT_ZOOM = 6;
 export const MAX_CLUSTER_RADIUS = 45;
@@ -43,10 +41,12 @@ export const tileSourceNames = new Map<TileProvider, string>(
 
 const nationColors: Record<Nation, string> = {
   abenaki: '#b77739',
-  cree: '#f8Aa3b',
+  anishinabe: '#e64c6d',
+  attikamek: '#e681fa',
+  cree: '#207e3c',
   innu: '#7a69d3',
   inuit: '#7dcff5',
-  metis: '#ec24f3',
+  southern_inuit: '#ec24f3',
   micmac: '#f36f24',
   mohawk: '#00b1ea',
   naskapi: '#5EB04C',
@@ -76,10 +76,12 @@ export const stateNameMap = new Map<State, string>(
 // to compute the nationStateMap later on
 export const initialNationStates: Record<Nation, State[]> = {
   abenaki: [],
+  anishinabe: [],
+  attikamek: [],
   cree: [],
   innu: [],
   inuit: [],
-  metis: [],
+  southern_inuit: [],
   micmac: [],
   mohawk: [],
   naskapi: [],

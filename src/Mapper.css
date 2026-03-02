@@ -118,10 +118,12 @@
   /* Visibility rules. We check if .map-wrapper (represented by &) has
   the 'show-' class and then set the corresponding child marker. */
   &.show-abenaki .nation-abenaki,
+  &.show-anishinabe .nation-anishinabe,
+  &.show-attikamek .nation-attikamek,
   &.show-cree .nation-cree,
   &.show-innu .nation-innu,
   &.show-inuit .nation-inuit,
-  &.show-metis .nation-metis,
+  &.show-southern_inuit .nation-southern_inuit,
   &.show-micmac .nation-micmac,
   &.show-mohawk .nation-mohawk,
   &.show-naskapi .nation-naskapi,
