@@ -14,7 +14,7 @@ export type TileProvider = typeof TILE_PROVIDERS[number];
 export const NATIONS = ['abenaki', 'anishinabe', 'attikamek', 'cree', 'innu', 'inuit', 'southern_inuit', 'micmac', 'mohawk', 'naskapi', 'wolastoqiyik', 'wendat'] as const;
 export type Nation = typeof NATIONS[number];
 
-export const STATES = ['QC', 'NB', 'NL', 'NS', 'NY', 'ON', 'PE'] as const;
+export const STATES = ['QC', 'MA', 'NB', 'NL', 'NS', 'NY', 'ON', 'PE'] as const;
 export type State = typeof STATES[number];
 
 export type Shapes = Point | Polygon | MultiPolygon;

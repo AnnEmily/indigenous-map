@@ -61,13 +61,14 @@ export const nationColorMap = new Map<Nation, string>(
 );
 
 const stateLabels: Record<State, string> = {
-  QC: 'Québec',
+  MA: 'Maine',
   NB: 'New Brunswick',
   NL: 'Newfoundland and Labrador',
   NS: 'Nova Scotia',
   NY: 'New York',
   ON: 'Ontario',
   PE: 'Prince Edward Island',
+  QC: 'Québec',
 };
 
 export const stateNameMap = new Map<State, string>(

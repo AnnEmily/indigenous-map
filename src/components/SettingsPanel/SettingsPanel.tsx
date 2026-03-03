@@ -1,5 +1,4 @@
 import { FC } from "react";
-import { Slider } from "@mui/material";
 import { useShallow } from "zustand/shallow";
 
 import { useMapStore } from "../../shared/store";

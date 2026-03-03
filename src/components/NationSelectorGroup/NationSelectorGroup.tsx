@@ -24,8 +24,18 @@ export const NationSelectorGroup: FC<NationSelectorGroupProps> = ({ nationStateM
     updateActiveNations: state.updateActiveNations,
   })));
 
+  const formatNationName = (value: string): string => {
+    return value
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
   // Get nations of visible provinces/states
   const allowedNations = NATIONS.filter(nation => intersection(nationStateMap.get(nation), activeStates).length > 0 );
+  const nationNames = new Map<Nation, string>(
+    Object.values(allowedNations).map((value) => [ value as Nation, formatNationName(value)])
+  );
 
   const allSelected = allowedNations.every(nation => activeNations.includes(nation));
   const allUnselected = allowedNations.every(nation => !activeNations.includes(nation));
@@ -63,7 +73,7 @@ export const NationSelectorGroup: FC<NationSelectorGroupProps> = ({ nationStateM
                     name={nation}
                   />
                 }
-                label={nation.charAt(0).toUpperCase() + nation.slice(1)}
+                label={nationNames.get(nation)}
                 className="selector-typography"
                 sx={{ '& .MuiTypography-root' : { background: nationColorMap.get(nation) } }}
               />
