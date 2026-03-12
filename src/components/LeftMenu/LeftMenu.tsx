@@ -1,15 +1,17 @@
 import { type FC } from "react";
 
 import '../../Mapper.css';
+import { geoJson } from "../../data/geoJson";
 import { NationPanel, SettingsPanel, StatePanel, TilePanel } from "../../components";
+import { getGroupingStats, useDataStore } from "../../shared/store";
 
-interface LeftMenuProps {
-  id?: string;
-}
-
-export const LeftMenu: FC<LeftMenuProps> = ({ id }) => {
+export const LeftMenu: FC = () => {
+  const setData =  useDataStore(state => state.setData);
+  const groupingStats = getGroupingStats(geoJson);
+  setData(groupingStats);
+  
   return (
-    <div id={id} className="left-menu" aria-label="Main menu">
+    <div id="left-menu" className="left-menu" aria-label="Main menu">
       <SettingsPanel />
       <TilePanel />
       <StatePanel />

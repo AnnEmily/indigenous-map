@@ -3,7 +3,7 @@ import { useShallow } from "zustand/shallow";
 import * as turf from '@turf/turf';
 import L from "leaflet";
 
-import { geoJson } from "../../data/data";
+import { geoJson } from "../../data/geoJson";
 import {
   closeGeoJsonRings,
   createTileLayer,

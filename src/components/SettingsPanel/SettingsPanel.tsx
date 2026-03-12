@@ -1,55 +1,26 @@
 import { FC } from "react";
-import { useShallow } from "zustand/shallow";
 
 import { useMapStore } from "../../shared/store";
-import { CheckboxSelector, SelectorDropdown } from "../../shared/components";
+import { CheckboxSelector, PanelDropdown } from "../../shared/components";
 
 export const SettingsPanel: FC = () => {
-    const state = useMapStore(useShallow(state => ({
-      forcePolygons: state.forcePolygons,
-      showConvexHulls: state.showConvexHulls,
-      showCoords: state.showCoords,
-      showZoom: state.showZoom,
-      viewport: state.viewport,
-      toggleForcePolygons: state.toggleForcePolygons,
-      toggleShowConvexHulls: state.toggleShowConvexHulls,
-      toggleShowCoords: state.toggleShowCoords,
-      toggleShowZooom: state.toggleShowZoom,
-    })));
+    const forcePolygons = useMapStore(s => s.forcePolygons);
+    const showConvexHulls = useMapStore(s => s.showConvexHulls);
+    const showCoords = useMapStore(s => s.showCoords);
+    const showZoom = useMapStore(s => s.showZoom);
+
+    const toggleForcePolygons = useMapStore(s => s.toggleForcePolygons);
+    const toggleShowConvexHulls = useMapStore(s => s.toggleShowConvexHulls);
+    const toggleShowCoords = useMapStore(s => s.toggleShowCoords);
+    const toggleShowZoom = useMapStore(s => s.toggleShowZoom);
   
   return (
-    <SelectorDropdown panelId="settings">
-      <CheckboxSelector label="Show Lat/Long" checked={state.showCoords} onToggle={state.toggleShowCoords} />
-      <CheckboxSelector label="Show zoom factor" checked={state.showZoom} onToggle={state.toggleShowZooom} />
-      <CheckboxSelector label="Show nations spread" checked={state.showConvexHulls} onToggle={state.toggleShowConvexHulls} />
-      <CheckboxSelector label="Force community polygons" checked={state.forcePolygons} onToggle={state.toggleForcePolygons} />
-
-      {/* <div style={{ display: 'flex', flexDirection: 'column', paddingInline: '14px', border: '1px solid gray', borderRadius: '8px', marginTop: '6px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginTop: '6px' }}>
-          <div>{"Polygons"}</div>
-          <div>{"Dots"}</div>
-        </div>
-        <div style={{ margin: '0px 6px -4px 4px', }}>
-          <Slider
-            aria-label="Sensitivity"
-            value={state.polygonThreshold}
-            valueLabelDisplay="off"
-            step={200}
-            marks
-            min={0}
-            max={1800}
-            size="small"
-            onChange={(_, val) => state.setPoygonThreshold(val)}
-            sx={{
-              '& .MuiSlider-thumb.Mui-active': {
-                color: 'green',
-                boxShadow: '0px 0px 0px 8px rgba(25, 118, 210, 0.16)',
-              }
-            }}
-          />
-        </div>
-      </div> */}
-    </SelectorDropdown>
+    <PanelDropdown panelId="settings">
+      <CheckboxSelector label="Show Lat/Long" checked={showCoords} onToggle={toggleShowCoords} />
+      <CheckboxSelector label="Show zoom factor" checked={showZoom} onToggle={toggleShowZoom} />
+      <CheckboxSelector label="Show nations spread" checked={showConvexHulls} onToggle={toggleShowConvexHulls} />
+      <CheckboxSelector label="Force community polygons" checked={forcePolygons} onToggle={toggleForcePolygons} />
+    </PanelDropdown>
   
   );
 };

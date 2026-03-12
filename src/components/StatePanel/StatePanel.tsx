@@ -1,14 +1,14 @@
 import { FC } from "react";
 
-import { SelectorDropdown } from "../../shared/components/SelectorDropdown";
+import { PanelDropdown } from "../../shared/components";
 import { StateSelectorGroup } from "../../components";
 
 export const StatePanel: FC = () => {
   
   return (
-    <SelectorDropdown panelId="stateFilter">
+    <PanelDropdown panelId="stateFilter">
       <StateSelectorGroup />
-    </SelectorDropdown>
+    </PanelDropdown>
   
   );
 };

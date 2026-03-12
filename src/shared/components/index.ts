@@ -1,2 +1,2 @@
 export * from './CheckboxSelector';
-export * from './SelectorDropdown';
+export * from './PanelDropdown';

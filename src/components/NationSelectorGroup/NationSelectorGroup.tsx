@@ -1,81 +1,92 @@
-import { type FC } from "react";
+import { useMemo, type FC } from "react";
 import { intersection } from "lodash";
-import { useShallow } from "zustand/shallow";
-import { Checkbox, FormControl, FormControlLabel, FormGroup, styled } from '@mui/material';
+import { FormControl, FormGroup } from '@mui/material';
 
-import { useMapStore } from "../../shared/store";
-import { nationColorMap } from "../../shared/constants";
-import { Nation, NATIONS, State } from "../../shared/types";
 import '../../Mapper.css';
+import { useDataStore, useMapStore } from "../../shared/store";
+import { nationColorMap } from "../../shared/constants";
+import { Nation, NATIONS } from "../../shared/types";
+import SelectorEntry from "./SelectorEntry";
 
-const MyCheckbox = styled(Checkbox)({
-  paddingTop: '1px',
-  paddingBottom: '1px',
-});
-
-interface NationSelectorGroupProps {
-  nationStateMap: Map<Nation, State[]>;
-}
-
-export const NationSelectorGroup: FC<NationSelectorGroupProps> = ({ nationStateMap }) => {
-  const { activeNations, activeStates, updateActiveNations } = useMapStore(useShallow(state => ({
-    activeNations: state.activeNations,
-    activeStates: state.activeStates,
-    updateActiveNations: state.updateActiveNations,
-  })));
+export const NationSelectorGroup: FC = () => {
+  const communitiesStatesByNation = useDataStore(state => state.communitiesStatesByNation);
+  const statesByNation = useDataStore(state => state.statesByNation);
+  const activeNations = useMapStore(s => s.activeNations);
+  const activeStates = useMapStore(s => s.activeStates);
+  const updateActiveNations = useMapStore(s => s.updateActiveNations);
 
   const formatNationName = (value: string): string => {
-    return value
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+    return value.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
   // Get nations of visible provinces/states
-  const allowedNations = NATIONS.filter(nation => intersection(nationStateMap.get(nation), activeStates).length > 0 );
-  const nationNames = new Map<Nation, string>(
-    Object.values(allowedNations).map((value) => [ value as Nation, formatNationName(value)])
-  );
+  const allowedNations = useMemo((): Nation[] => {
+    return NATIONS
+      .filter(nation => intersection(statesByNation.get(nation), activeStates).length > 0 )
+      .sort();
+  }, [statesByNation, activeStates]);
+  
+  const nationNames = useMemo((): Map<Nation, string> => {
+    return new Map<Nation, string>(
+      Object.values(allowedNations).map((value) => [ value as Nation, formatNationName(value)])
+    );
+  }, [allowedNations]);
 
   const allSelected = allowedNations.every(nation => activeNations.includes(nation));
   const allUnselected = allowedNations.every(nation => !activeNations.includes(nation));
   
   // console.log('activeNations  = ' + activeNations);
   // console.log('allowedNations = ' + allowedNations);
-  // console.log('allSelected    = ' + allSelected);
-  // console.log('allUnselected  = ' + allUnselected);
+
+  // Get community count for each nation of visible provinces/states
+  const commCountByNation = useMemo((): Map<Nation, number> => {
+    const countMap = new Map<Nation, number>();
+
+    for (const [nation, stateToCount] of communitiesStatesByNation) {
+      if (allowedNations.includes(nation)) {
+        const uniqueCommunities = new Set<string>();
+
+        for (const [state, communityList] of stateToCount) {
+          if (activeStates.includes(state)) {
+            communityList.forEach(c => uniqueCommunities.add(c));
+          }
+        }
+        countMap.set(nation, uniqueCommunities.size);
+      }
+    }
+
+    return countMap;
+  }, [activeStates, allowedNations, communitiesStatesByNation]);
+
+  // Get total count of communities
+  const totalCommunities = Array.from(commCountByNation.values()).reduce((a, b) => a + b, 0);
 
   return (
     <div id="nation-selector-group">
       <FormControl component="fieldset">
-        <FormGroup>
-          <FormControlLabel
-            label="All"
-            control={
-              <MyCheckbox
-                checked={allSelected}
-                indeterminate={!allSelected && !allUnselected}
-                onChange={() => updateActiveNations([...NATIONS], !allSelected)}
-              />
-            }
+        <FormGroup sx={{ width: '200px' }}>
+          <SelectorEntry
+            label={"All Nations"}
+            isChecked={allSelected}
+            indeterminate={!allSelected && !allUnselected}
+            onToggle={() => updateActiveNations([...NATIONS], !allSelected)}
+            communityCount={totalCommunities}
+            bgColor={'#969696'}
           />
 
-          {allowedNations.sort().map(nation => {
+          {allowedNations.map(nation => {
             const isActive = activeNations.includes(nation);
+            const commCount = isActive ? commCountByNation.get(nation) : 0;
+            const bgColor = nationColorMap.get(nation);
 
             return (
-              <FormControlLabel
+              <SelectorEntry
                 key={nation}
-                control={
-                  <MyCheckbox
-                    checked={isActive}
-                    onChange={() => updateActiveNations([nation], !isActive)}
-                    name={nation}
-                  />
-                }
                 label={nationNames.get(nation)}
-                className="selector-typography"
-                sx={{ '& .MuiTypography-root' : { background: nationColorMap.get(nation) } }}
+                isChecked={isActive}
+                onToggle={() => updateActiveNations([nation], !isActive)}
+                communityCount={commCount}
+                bgColor={bgColor}
               />
             );
           })}

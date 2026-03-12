@@ -1,14 +1,14 @@
 import { FC } from "react";
 
-import { SelectorDropdown } from "../../shared/components/SelectorDropdown";
+import { PanelDropdown } from "../../shared/components/PanelDropdown";
 import { TileSelectorGroup } from "../TileSelectorGroup";
 
 export const TilePanel: FC = () => {
   
   return (
-    <SelectorDropdown panelId="tileSource">
+    <PanelDropdown panelId="tileSource">
       <TileSelectorGroup />
-    </SelectorDropdown>
+    </PanelDropdown>
   
   );
 };

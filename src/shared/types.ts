@@ -11,11 +11,18 @@ export type Panel = typeof PANELS[number];
 export const TILE_PROVIDERS = ['osm', 'mbStreets', 'mbOutdoors', 'mbDark', 'mbSatellite'] as const;
 export type TileProvider = typeof TILE_PROVIDERS[number];
 
-export const NATIONS = ['abenaki', 'anishinabe', 'attikamek', 'cree', 'innu', 'inuit', 'southern_inuit', 'micmac', 'mohawk', 'naskapi', 'wolastoqiyik', 'wendat'] as const;
+export const NATIONS = ['abenaki', 'anishinabe', 'attikamek', 'cree', 'innu', 'inuit', 'southern_inuit', 'micmac', 'mohawk', 'naskapi', 'wendat', 'wolastoqiyik'] as const;
 export type Nation = typeof NATIONS[number];
 
 export const STATES = ['QC', 'MA', 'NB', 'NL', 'NS', 'NY', 'ON', 'PE'] as const;
 export type State = typeof STATES[number];
+
+// AEG removable ?
+// export type CommunityCountByNation = Map<Nation, number>;
+// export type CommunityCountByState = Map<State, number>;
+// export type NationsByState = Map<State, Nation[]>;
+// export type StatesByNation = Map<Nation, State[]>;
+// export type NationCountByState = Map<State, number>;
 
 export type Shapes = Point | Polygon | MultiPolygon;
 
@@ -27,6 +34,20 @@ export type CommunityProperties = {
   states: State[];
   website?: string;
   boundaries?: string[];
+};
+
+export type NationInfo = {
+  nation: Nation;
+  nationNameNative: string;
+  language: string[];
+  territoryName: string;
+  territoryArea: string;
+  government: string[];
+  websites: string[];
+  population: string;
+  formerNamesFR: string[];
+  formerNamesEN: string[];
+  families: string[];
 };
 
 export type GeoJson = FeatureCollection<Shapes, CommunityProperties>;
