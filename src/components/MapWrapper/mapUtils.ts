@@ -4,7 +4,7 @@ import * as turf from '@turf/turf';
 import 'leaflet.markercluster';
 
 import { GeoJson, Nation, TileProvider } from "../../shared/types";
-import { DISABLE_CLUSTERING_AT_ZOOM, mapboxIds, MAX_CLUSTER_RADIUS, MIN_PIXEL_AREA, nationColorMap } from "../../shared/constants";
+import { DISABLE_CLUSTERING_AT_ZOOM, MAX_CLUSTER_RADIUS, MIN_PIXEL_AREA, nationColorMap, providerConfigs } from "../../shared/constants";
 
 export const addCoordsControl = (map: L.Map) => {
   const coordsControl = new L.Control({ position: "bottomleft" });
@@ -282,27 +282,8 @@ export function computeNationHulls(geoJson: FeatureCollection): Map<Nation, L.Po
 };
 
 export const createTileLayer = (tileSource: TileProvider): L.TileLayer => {
-  if (['mbOutdoors', 'mbStreets', 'mbSatellite', 'mbDark'].includes(tileSource)) {
-    const token = import.meta.env.VITE_MAPBOX_TOKEN;
-
-    return L.tileLayer(
-      `https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=${token}`,
-      {
-        attribution:
-          '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> ' +
-          '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19,
-        tileSize: 512,
-        zoomOffset: -1,
-        id: mapboxIds.get(tileSource),
-      }
-    );
-  }
-
-  return L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "© OpenStreetMap",
-    maxZoom: 19,
-  });
+  const config = providerConfigs[tileSource] ?? providerConfigs['osm'];
+  return L.tileLayer(config.url, config);
 };
 
 export function getClosedCoords(latLngs: L.LatLng[]): [number, number][] {

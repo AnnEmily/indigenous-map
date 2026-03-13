@@ -19,7 +19,7 @@ export const NationSelectorGroup: FC = () => {
     return value.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
-  // Get nations of visible provinces/states
+  // Get visible nations of visible provinces/states
   const allowedNations = useMemo((): Nation[] => {
     return NATIONS
       .filter(nation => intersection(statesByNation.get(nation), activeStates).length > 0 )
@@ -35,15 +35,15 @@ export const NationSelectorGroup: FC = () => {
   const allSelected = allowedNations.every(nation => activeNations.includes(nation));
   const allUnselected = allowedNations.every(nation => !activeNations.includes(nation));
   
-  // console.log('activeNations  = ' + activeNations);
-  // console.log('allowedNations = ' + allowedNations);
+  console.log('activeNations  = ' + activeNations);
+  console.log('allowedNations = ' + allowedNations);
 
   // Get community count for each nation of visible provinces/states
   const commCountByNation = useMemo((): Map<Nation, number> => {
     const countMap = new Map<Nation, number>();
 
     for (const [nation, stateToCount] of communitiesStatesByNation) {
-      if (allowedNations.includes(nation)) {
+      if (allowedNations.includes(nation) && activeNations.includes(nation)) {
         const uniqueCommunities = new Set<string>();
 
         for (const [state, communityList] of stateToCount) {
@@ -56,7 +56,7 @@ export const NationSelectorGroup: FC = () => {
     }
 
     return countMap;
-  }, [activeStates, allowedNations, communitiesStatesByNation]);
+  }, [activeStates, activeNations, allowedNations, communitiesStatesByNation]);
 
   // Get total count of communities
   const totalCommunities = Array.from(commCountByNation.values()).reduce((a, b) => a + b, 0);

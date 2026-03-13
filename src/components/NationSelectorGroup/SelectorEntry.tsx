@@ -33,7 +33,7 @@ export const SelectorEntry: FC<SelectorEntryProps> = ({
         label={
           <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
             <div>{label}</div>
-            <div>{`${communityCount}`}</div>
+            <div>{communityCount}</div>
           </div>
         }
         className="selector-typography"

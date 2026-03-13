@@ -17,28 +17,180 @@ export const panelNames = new Map<Panel, string>(
   Object.entries(panelLabels) as [Panel, string][]
 );
 
-const providerIdMapping: Record<TileProvider, string> = {
-  mbOutdoors: 'mapbox/outdoors-v11',
-  mbStreets: 'mapbox/streets-v11',
-  mbSatellite: 'mapbox/satellite-v9',
-  mbDark: 'mapbox/dark-v10',
-  osm: '', // Obligatoire pour satisfaire le Record
+const token = import.meta.env.VITE_MAPBOX_TOKEN;
+
+export const providerConfigs: Record<TileProvider, { url: string; attribution: string; maxZoom: number; subdomains?: string; tileSize?: number; zoomOffset?: number; id?: string; ext?: string }> = {
+  osm: {
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '© OpenStreetMap',
+    maxZoom: 19
+  },
+  otm: {
+    url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    attribution: 'Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap',
+    maxZoom: 17
+  },
+  cartoDark: {
+    url: `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png`,
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+    maxZoom: 20,
+    subdomains: 'abcd'
+  },
+  cartoVoyager: {
+    url: `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png`,
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+    maxZoom: 20,
+    subdomains: 'abcd'
+  },
+  stamenToner: {
+    url: `https://tiles.stadiamaps.com/tiles/stamen_toner_lite/{z}/{x}/{y}.png`,
+    attribution: 'Map tiles by Stamen Design, hosted by Stadia Maps. Data © OpenStreetMap contributors',
+    maxZoom: 18
+  },
+  stamenTerrain: {
+    url: `https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}.png`,
+    attribution: 'Map tiles by Stamen Design, hosted by Stadia Maps. Data © OpenStreetMap contributors',
+    maxZoom: 18
+  },
+  stamenWatercolor: {
+    url: `https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg`,
+    attribution: 'Map tiles by Stamen Design, hosted by Stadia Maps. Data © OpenStreetMap contributors',
+    maxZoom: 18
+  },
+  arcgisWorldStreet: {
+    url: `https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}`,
+    attribution: 'Tiles © Esri',
+    maxZoom: 19
+  },
+  arcgisWorldTopo: {
+    url: `https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}`,
+    attribution: 'Tiles © Esri',
+    maxZoom: 19
+  },
+  arcgisWorldImagery: {
+    url: `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}`,
+    attribution: 'Tiles © Esri',
+    maxZoom: 19
+  },
+  arcgisNatGeo: {
+    url: `https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}`,
+    attribution: 'Tiles © Esri',
+    maxZoom: 19
+  },
+  arcgisLightGray: {
+    url: `https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}`,
+    attribution: 'Tiles © Esri',
+    maxZoom: 19
+  },
+  arcgisDarkGray: {
+    url: `https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}`,
+    attribution: 'Tiles © Esri',
+    maxZoom: 19
+  },
+  mbOutdoors: {
+    url: `https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=${token}`,
+    attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19,
+    tileSize: 512,
+    zoomOffset: -1,
+    id: 'mapbox/outdoors-v11',
+  },
+  mbStreets: {
+    url: `https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=${token}`,
+    attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19,
+    tileSize: 512,
+    zoomOffset: -1,
+    id: 'mapbox/streets-v11',
+  },
+  mbSatellite: {
+    url: `https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=${token}`,
+    attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19,
+    tileSize: 512,
+    zoomOffset: -1,
+    id: 'mapbox/satellite-v9',
+  },
+  mbDark: {
+    url: `https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=${token}`,
+    attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19,
+    tileSize: 512,
+    zoomOffset: -1,
+    id: 'mapbox/dark-v10',
+  }
 };
 
-export const mapboxIds = new Map<TileProvider, string>(
-  Object.entries(providerIdMapping) as [TileProvider, string][]
-);
-
 const tileProviderLabels: Record<TileProvider, string> = {
-  osm: 'OpenStreetMap',
+  arcgisLightGray: 'ArcGIS - Light',
+  arcgisDarkGray: 'ArcGIS - Dark',
+  arcgisNatGeo: 'ArcGIS - NatGeo',
+  arcgisWorldImagery: 'ArcGIS - Satellite',
+  arcgisWorldStreet: 'ArcGIS - Street',
+  arcgisWorldTopo: 'ArcGIS - Topo',
+  cartoDark: 'Carto - Dark',
+  cartoVoyager: 'Carto - Voyager',
   mbOutdoors: 'Mapbox - Outdoors',
   mbStreets: 'Mapbox - Streets',
   mbSatellite: 'Mapbox - Satellite',
-  mbDark: 'Mapbox - Dark',
+  mbDark: 'Mapbox - Gray',
+  osm: 'OpenStreetMap',
+  otm: 'OpenTopoMap',
+  stamenTerrain: 'Stamen - Terrain',
+  stamenToner: 'Stamen - Light',
+  stamenWatercolor: 'Stamen - Watercolor',
 };
 
 export const tileSourceNames = new Map<TileProvider, string>(
   Object.entries(tileProviderLabels) as [TileProvider, string][]
+);
+
+const tileProviderColors: Record<TileProvider, string> = {
+  arcgisDarkGray: '#474749',
+  arcgisLightGray: '#efefef',
+  arcgisNatGeo: '#b2c38f',
+  arcgisWorldImagery: '#404b21',
+  arcgisWorldStreet: '#c9caa0',
+  arcgisWorldTopo: '#eaf1dd',
+  cartoDark: '#090909',
+  cartoVoyager: '#f0f2e6',
+  mbOutdoors: '#c6e6aa',
+  mbStreets: '#d2e7bf',
+  mbSatellite: '#2d5319',
+  mbDark: '#333432',
+  osm: '#bddab1',
+  otm: '#d3ad75',
+  stamenTerrain: '#839f77',
+  stamenToner: '#ffffff',
+  stamenWatercolor: '#e9cbb1',
+};
+
+export const tileSourceColors = new Map<TileProvider, string>(
+  Object.entries(tileProviderColors) as [TileProvider, string][]
+);
+
+const tileProviderTypes: Record<TileProvider, string> = {
+  arcgisDarkGray: 'mono_gray_1',
+  arcgisLightGray: 'mono_white_1',
+  arcgisNatGeo: 'terrain_4',
+  arcgisWorldImagery: 'satellite_1',
+  arcgisWorldStreet: 'street_2',
+  arcgisWorldTopo: 'terrain_2',
+  cartoDark: 'mono_black',
+  cartoVoyager: 'street_0',
+  mbOutdoors: 'terrain_3',
+  mbStreets: 'street_1',
+  mbSatellite: 'satellite_2',
+  mbDark: 'mono_gray_2',
+  osm: 'street_3',
+  otm: 'terrain_5',
+  stamenTerrain: 'terrain_6',
+  stamenToner: 'mono_white_2',
+  stamenWatercolor: 'artist',
+};
+
+export const tileSourceTypes = new Map<TileProvider, string>(
+  Object.entries(tileProviderTypes) as [TileProvider, string][]
 );
 
 const nationColors: Record<Nation, string> = {
