@@ -12,6 +12,7 @@ interface Viewport {
 interface MapData {
   activeNations: Nation[];
   activeStates: State[];
+  enableClustering: boolean;
   openPanels: Panel[];
   forcePolygons: boolean;
   showConvexHulls: boolean;
@@ -23,6 +24,7 @@ interface MapData {
 
 interface MapActions {
   setTileSource: (_ts: TileProvider) => void;
+  toggleEnableClustering: () => void;
   toggleShowConvexHulls: () => void;
   toggleShowCoords: () => void;
   toggleForcePolygons: () => void;
@@ -37,6 +39,7 @@ interface MapActions {
 export type MapState = MapData & MapActions;
 
 const initialState: MapData = {
+  enableClustering: true,
   showConvexHulls: false,
   showCoords: false,
   forcePolygons: false,
@@ -56,6 +59,8 @@ export const useMapStore = create<MapState>()(
       setTileSource: tileSource => set({ tileSource }),
       
       setViewport: (viewport) => set({ viewport }),
+
+      toggleEnableClustering: () => set(state => ({ enableClustering: !state.enableClustering })),
 
       toggleShowConvexHulls: () => set(state => ({ showConvexHulls: !state.showConvexHulls })),
 
@@ -97,6 +102,7 @@ export const useMapStore = create<MapState>()(
 
       // Only persist these specific fields on reset
       partialize: (state) => ({
+        enableClustering: state.enableClustering,
         openPanels: state.openPanels,
         tileSource: state.tileSource,
         showCoords: state.showCoords,

@@ -1,5 +1,4 @@
 import { RefObject, useEffect, useRef } from "react";
-import { useShallow } from "zustand/shallow";
 import * as turf from '@turf/turf';
 import L from "leaflet";
 
@@ -15,32 +14,31 @@ import {
   processPolygonsLayer,
   sanityCheckGeoJson,
 } from "./mapUtils";
-import { Nation } from "../../shared/types";
+import { MarkerMeta, Nation } from "../../shared/types";
 import { useMapStore } from "../../shared/store";
-import { MIN_PIXEL_AREA, nationColorMap } from "../../shared/constants";
+import { DISABLE_CLUSTERING_AT_ZOOM, MIN_PIXEL_AREA, nationColorMap } from "../../shared/constants";
 
 export const useLeafletMap = (
   containerRef: RefObject<HTMLDivElement>,
 ) => {
   const mapRef = useRef<L.Map | null>(null);
   const syncRef = useRef<() => void>(() => {});
-  const tileLayerRef = useRef<L.TileLayer | null>(null);
-  const allMarkersRef = useRef<L.Marker[]>([]);
+  const tileLayerRef = useRef<L.Layer | null>(null);
+  const allMarkersRef = useRef<L.CircleMarker[]>([]);
   const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
   const hullLayersRef = useRef<Map<Nation, L.Polygon>>(new Map());
   const hullLabelRef = useRef<Map<Nation, L.Marker>>(new Map());
 
-  const forcePolygons = useMapStore(useShallow(state => state.forcePolygons));
+  const forcePolygons = useMapStore(state => state.forcePolygons);
   const setViewport = useMapStore(state => state.setViewport);
-  const savedViewport = useMapStore(useShallow(state => state.viewport));
+  const savedViewport = useMapStore(state => state.viewport);
 
-  const { activeNations, activeStates, showConvexHulls, tileSource, viewport } = useMapStore(useShallow(state => ({
-    activeNations: state.activeNations,
-    activeStates: state.activeStates,
-    showConvexHulls: state.showConvexHulls,
-    tileSource: state.tileSource,
-    viewport: state.viewport,
-  })));
+  const activeNations = useMapStore(state => state.activeNations);
+  const activeStates = useMapStore(state => state.activeStates);
+  const enableClustering = useMapStore(state => state.enableClustering);
+  const showConvexHulls = useMapStore(state => state.showConvexHulls);
+  const tileSource = useMapStore(state => state.tileSource);
+  const viewport = useMapStore(state => state.viewport);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -53,6 +51,10 @@ export const useLeafletMap = (
     });
 
     mapRef.current = map;
+
+    map.createPane('basemapLabels');
+    map.getPane('basemapLabels')!.style.zIndex = '650'; /// markers at zIndex = 600
+    map.getPane('basemapLabels')!.style.pointerEvents = 'none';
 
     // Pre-flight data check & fix
     sanityCheckGeoJson(geoJson);
@@ -161,6 +163,8 @@ export const useLeafletMap = (
 
       if (!map || !clusterGroup) return;
 
+      const clusteringActive = enableClustering && !showConvexHulls && viewport.zoom < DISABLE_CLUSTERING_AT_ZOOM;
+
       // Hull mode removes clustering entirely
       if (showConvexHulls) {
         if (map.hasLayer(clusterGroup)) {
@@ -174,9 +178,14 @@ export const useLeafletMap = (
 
       // Enable or not markers visibility
       if (!showConvexHulls) {
+        const zoom = map.getZoom();
+        const radius = zoom < 6 ? zoom : 6;
+        const weight = zoom < 4 ? 0 : zoom < 6 ? 0.7 : 1;
+
         allMarkersRef.current.forEach((marker) => {
           // Cast to any to access our custom _meta property
-          const meta = (marker as any)._meta;
+          const meta = (marker as any)._meta as MarkerMeta;
+
           if (!meta) return;
 
           const { nation, states: layerStates, bounds } = meta;
@@ -184,11 +193,21 @@ export const useLeafletMap = (
           const isSelected = activeNations.includes(nation) && activeStates.some(s => layerStates.includes(s));
 
           if (isSelected) {
-            // Ensure it's in the cluster group so the count is correct
-            if (!clusterGroup.hasLayer(marker)) {
-              clusterGroup.addLayer(marker);
+            // Move markers between clutering layer or map layer
+
+            if (clusteringActive) {
+              if (meta.container !== "cluster") {
+                map.removeLayer(marker);
+                clusterGroup.addLayer(marker); // AEG unsure
+                meta.container = "cluster";
+              }
+            } else {
+              if (meta.container !== "map") {
+                clusterGroup.removeLayer(marker);
+                marker.addTo(map);
+                meta.container = "map";
+              }
             }
-            
             // Handle Dot-vs-Polygon swap within the cluster
             const nw = map.latLngToLayerPoint(bounds.getNorthWest());
             const se = map.latLngToLayerPoint(bounds.getSouthEast());
@@ -196,29 +215,36 @@ export const useLeafletMap = (
             
             const polygonThreshold = forcePolygons ? 0 : MIN_PIXEL_AREA;
             const shouldShowPin = pixelArea < polygonThreshold;
-            marker.setOpacity(shouldShowPin ? 1 : 0);
-            
-            const el = marker.getElement();
-            if (el) {
-              el.style.pointerEvents = shouldShowPin ? 'auto' : 'none';
-            }
+
+            // Adjust dot to zoom factor
+            marker.setRadius(radius);
+            marker.setStyle({
+              weight,
+              opacity: shouldShowPin ? 1 : 0,
+              fillOpacity: shouldShowPin ? 1 : 0,
+              interactive: shouldShowPin,
+            });
           } else {
             // Physically remove from cluster so the bubble number updates
             clusterGroup.removeLayer(marker);
+            map.removeLayer(marker);
+            meta.container = null;
           }
         });
       } else {
         // Hide all markers when hull mode is active
         allMarkersRef.current.forEach((marker) => {
-          marker.setOpacity(0);
-          const el = marker.getElement();
-          if (el) el.style.pointerEvents = 'none';
+          marker.setStyle({
+            opacity: 0,
+            fillOpacity: 0,
+            interactive: false,
+          });
         });
       }
       
       // Enable or not polygons visibility
       map.eachLayer((layer) => {
-        if (!(layer instanceof L.Marker)) {
+        if (!(layer instanceof L.CircleMarker)) {
           processPolygonsLayer(layer, map, activeNations, activeStates, showConvexHulls, forcePolygons);
         }
       });
@@ -244,12 +270,12 @@ export const useLeafletMap = (
       });
 
     };
-  }, [activeNations, activeStates, forcePolygons, viewport.zoom, showConvexHulls]);
+  }, [activeNations, activeStates, enableClustering, forcePolygons, viewport.zoom, showConvexHulls]);
 
   useEffect(() => {
     // Runs when toggling nation or state visibility checkboxes
     syncRef.current();
-  }, [activeNations, activeStates, showConvexHulls, forcePolygons]);
+  }, [activeNations, activeStates, showConvexHulls, enableClustering, forcePolygons]);
 
   useEffect(() => {
     if (!mapRef.current) return;

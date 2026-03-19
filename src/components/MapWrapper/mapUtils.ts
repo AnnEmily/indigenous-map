@@ -3,7 +3,7 @@ import L from "leaflet";
 import * as turf from '@turf/turf';
 import 'leaflet.markercluster';
 
-import { GeoJson, Nation, TileProvider } from "../../shared/types";
+import { GeoJson, MarkerMeta, Nation, TileProvider } from "../../shared/types";
 import { DISABLE_CLUSTERING_AT_ZOOM, MAX_CLUSTER_RADIUS, MIN_PIXEL_AREA, nationColorMap, providerConfigs } from "../../shared/constants";
 
 export const addCoordsControl = (map: L.Map) => {
@@ -51,7 +51,7 @@ export const addNationLayers = (map: L.Map, data: GeoJson) => {
   const globalTooltip = L.tooltip({
     sticky: false,
     direction: 'top',
-    offset: [0, -15],
+    offset: [0, -5],
     className: 'custom-tooltip',
     permanent: false
   });
@@ -102,7 +102,7 @@ export const addNationLayers = (map: L.Map, data: GeoJson) => {
     }
   });
 
-  const markersArray: L.Marker[] = [];
+  const markersArray: L.CircleMarker[] = [];
 
   data.features.forEach((feature) => {
     const { id, nation, name, states } = feature.properties;
@@ -151,19 +151,29 @@ export const addNationLayers = (map: L.Map, data: GeoJson) => {
       }
     });
 
-    const marker = L.marker(center, {
-      icon: L.divIcon({
-        className: `custom-marker nation-${nation} marker-${id}`,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12],
-        html: `
-          <div aria-label="${feature.properties.name}">
-            <svg width="24" height="24" viewBox="0 0 24 24" style="display: block;">
-              <circle cx="12" cy="12" r="8" fill="${color}" stroke="white" stroke-width="2" />
-            </svg>
-          </div>
-        `
-      })
+    // AEG
+    // const marker = L.marker(center, {
+    //   icon: L.divIcon({
+    //     className: `custom-marker nation-${nation} marker-${id}`,
+    //     iconSize: [24, 24],
+    //     iconAnchor: [12, 12],
+    //     html: `
+    //       <div aria-label="${feature.properties.name}">
+    //         <svg width="24" height="24" viewBox="0 0 24 24" style="display: block;">
+    //           <circle cx="12" cy="12" r="6" fill="${color}" stroke="white" stroke-width="2" />
+    //         </svg>
+    //       </div>
+    //     `
+    //   })
+    // });
+
+    const marker = L.circleMarker(center, {
+      radius: 6,
+      fillColor: color,
+      color: 'white',     // stroke color
+      weight: 2,          // stroke width
+      opacity: 1,         // stroke opacity
+      fillOpacity: 1
     });
 
     // Event Listeners
@@ -184,11 +194,12 @@ export const addNationLayers = (map: L.Map, data: GeoJson) => {
     marker.on(listeners);
 
     // Metadata Attachment
-    const metadata = {
+    const metadata: MarkerMeta = {
       featureId: id,
       nation,
       bounds: visibilityBounds,
-      states: states || []
+      states: states || [],
+      container: "cluster" as "cluster" | "map" | null
     };
 
     markersArray.push(marker);
@@ -281,9 +292,24 @@ export function computeNationHulls(geoJson: FeatureCollection): Map<Nation, L.Po
   return result;
 };
 
-export const createTileLayer = (tileSource: TileProvider): L.TileLayer => {
-  const config = providerConfigs[tileSource] ?? providerConfigs['osm'];
-  return L.tileLayer(config.url, config);
+export const createTileLayer = (tileSource: TileProvider): L.Layer => {
+  const { url, labelsUrl, ...options } = providerConfigs[tileSource] ?? providerConfigs['osm'];
+
+  const baseLayer = L.tileLayer(url, {
+    ...options,
+    className: options.tileClassName || '',
+  });
+
+  if (labelsUrl) {
+    const labelsLayer = L.tileLayer(labelsUrl, {
+      ...options,
+      pane: 'basemapLabels'
+    });
+
+    return L.layerGroup([baseLayer, labelsLayer]);
+  }
+
+  return baseLayer;
 };
 
 export function getClosedCoords(latLngs: L.LatLng[]): [number, number][] {

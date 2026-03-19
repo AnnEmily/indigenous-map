@@ -1,3 +1,4 @@
+import L from "leaflet";
 import { FeatureCollection, MultiPolygon, Point, Polygon } from "geojson";
 
 export type Coords = {
@@ -13,7 +14,7 @@ export const CARTO = ['cartoDark', 'cartoVoyager'] as const;
 export const MAPBOX = ['mbOutdoors', 'mbStreets', 'mbSatellite', 'mbDark'] as const;
 export const OPEN_STREET_MAP = ['osm'] as const;
 export const OPEN_TOPO_MAP = ['otm'] as const;
-export const STAMEN = ['stamenToner', 'stamenTerrain', 'stamenWatercolor'] as const;
+export const STAMEN = ['stamenDark', 'stamenTerrain', 'stamenWatercolor'] as const;
 
 export const TILE_PROVIDERS = [
   ...ARCGIS,
@@ -41,6 +42,16 @@ export type CommunityProperties = {
   states: State[];
   website?: string;
   boundaries?: string[];
+  population?: {
+    value: number;
+    year?: number;
+    source?: string;
+  }
+  govId?: string;
+  area?: {
+    value: number;
+    unit: string;
+  }
 };
 
 export type NationInfo = {
@@ -58,3 +69,24 @@ export type NationInfo = {
 };
 
 export type GeoJson = FeatureCollection<Shapes, CommunityProperties>;
+
+export type MarkerMeta = {
+  featureId: number;
+  nation: Nation;
+  bounds: L.LatLngBounds;
+  states: string[];
+  container: "cluster" | "map" | null;
+};
+
+export type TileProviderOptions = {
+  url: string;
+  attribution: string;
+  maxZoom: number;
+  labelsUrl?: string;
+  subdomains?: string;
+  tileSize?: number;
+  zoomOffset?: number;
+  id?: string;
+  ext?: string;
+  tileClassName?: string;
+};

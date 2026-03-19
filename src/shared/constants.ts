@@ -1,4 +1,4 @@
-import { Nation, Panel, State, TileProvider } from "./types";
+import { Nation, Panel, State, TileProvider, TileProviderOptions } from "./types";
 
 // Minimum area in pixels to display a polygon instead of a pin on the map
 export const MIN_PIXEL_AREA = 2000;
@@ -7,9 +7,9 @@ export const DISABLE_CLUSTERING_AT_ZOOM = 6;
 export const MAX_CLUSTER_RADIUS = 45;
 
 const panelLabels: Record<Panel, string> = {
-  settings: 'Settings',
+  settings: 'Display Settings',
   tileSource: 'Map Source',
-  stateFilter: 'State Filter',
+  stateFilter: 'Province Filter',
   nations: 'Indigenous Nations',
 };
 
@@ -19,7 +19,7 @@ export const panelNames = new Map<Panel, string>(
 
 const token = import.meta.env.VITE_MAPBOX_TOKEN;
 
-export const providerConfigs: Record<TileProvider, { url: string; attribution: string; maxZoom: number; subdomains?: string; tileSize?: number; zoomOffset?: number; id?: string; ext?: string }> = {
+export const providerConfigs: Record<TileProvider, TileProviderOptions> = {
   osm: {
     url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: '© OpenStreetMap',
@@ -42,10 +42,16 @@ export const providerConfigs: Record<TileProvider, { url: string; attribution: s
     maxZoom: 20,
     subdomains: 'abcd'
   },
-  stamenToner: {
-    url: `https://tiles.stadiamaps.com/tiles/stamen_toner_lite/{z}/{x}/{y}.png`,
+  // stamenToner: {
+  //   url: `https://tiles.stadiamaps.com/tiles/stamen_toner_lite/{z}/{x}/{y}.png`,
+  //   attribution: 'Map tiles by Stamen Design, hosted by Stadia Maps. Data © OpenStreetMap contributors',
+  //   maxZoom: 18
+  // },
+  stamenDark: {
+    url: `https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}.png`,
     attribution: 'Map tiles by Stamen Design, hosted by Stadia Maps. Data © OpenStreetMap contributors',
-    maxZoom: 18
+    maxZoom: 18,
+    tileClassName: 'tiles-dark-enhanced',
   },
   stamenTerrain: {
     url: `https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}.png`,
@@ -84,6 +90,7 @@ export const providerConfigs: Record<TileProvider, { url: string; attribution: s
   },
   arcgisDarkGray: {
     url: `https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}`,
+    labelsUrl: `https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}`,
     attribution: 'Tiles © Esri',
     maxZoom: 19
   },
@@ -121,6 +128,32 @@ export const providerConfigs: Record<TileProvider, { url: string; attribution: s
   }
 };
 
+// This is a quick way to enable or ot the choice of a basemap
+// in the UI without changing code elsewhere
+const tileProviderEnable: Record<TileProvider, boolean> = {
+  arcgisLightGray: true,
+  arcgisDarkGray: false,
+  arcgisNatGeo: true,
+  arcgisWorldImagery: true,
+  arcgisWorldStreet: true,
+  arcgisWorldTopo: true,
+  cartoDark: false,
+  cartoVoyager: true,
+  mbOutdoors: true,
+  mbStreets: true,
+  mbSatellite: true,
+  mbDark: true,
+  osm: true,
+  otm: true,
+  stamenTerrain: true,
+  stamenDark: true,
+  stamenWatercolor: true,
+};
+
+export const tileSourceEnable = new Map<TileProvider, boolean>(
+  Object.entries(tileProviderEnable) as [TileProvider, boolean][]
+);
+
 const tileProviderLabels: Record<TileProvider, string> = {
   arcgisLightGray: 'ArcGIS - Light',
   arcgisDarkGray: 'ArcGIS - Dark',
@@ -137,7 +170,7 @@ const tileProviderLabels: Record<TileProvider, string> = {
   osm: 'OpenStreetMap',
   otm: 'OpenTopoMap',
   stamenTerrain: 'Stamen - Terrain',
-  stamenToner: 'Stamen - Light',
+  stamenDark: 'Stamen - Dark',
   stamenWatercolor: 'Stamen - Watercolor',
 };
 
@@ -161,7 +194,7 @@ const tileProviderColors: Record<TileProvider, string> = {
   osm: '#bddab1',
   otm: '#d3ad75',
   stamenTerrain: '#839f77',
-  stamenToner: '#ffffff',
+  stamenDark: '#333432',
   stamenWatercolor: '#e9cbb1',
 };
 
@@ -170,22 +203,22 @@ export const tileSourceColors = new Map<TileProvider, string>(
 );
 
 const tileProviderTypes: Record<TileProvider, string> = {
-  arcgisDarkGray: 'mono_gray_1',
+  arcgisDarkGray: 'mono_dark_2',
   arcgisLightGray: 'mono_white_1',
   arcgisNatGeo: 'terrain_4',
   arcgisWorldImagery: 'satellite_1',
   arcgisWorldStreet: 'street_2',
   arcgisWorldTopo: 'terrain_2',
-  cartoDark: 'mono_black',
+  cartoDark: 'mono_dark_1',
   cartoVoyager: 'street_0',
   mbOutdoors: 'terrain_3',
   mbStreets: 'street_1',
   mbSatellite: 'satellite_2',
-  mbDark: 'mono_gray_2',
+  mbDark: 'mono_dark_3',
   osm: 'street_3',
   otm: 'terrain_5',
   stamenTerrain: 'terrain_6',
-  stamenToner: 'mono_white_2',
+  stamenDark: 'mono_dark_4_2',
   stamenWatercolor: 'artist',
 };
 

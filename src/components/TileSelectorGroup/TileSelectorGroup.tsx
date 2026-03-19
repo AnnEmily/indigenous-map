@@ -4,7 +4,7 @@ import { Box, FormControl, FormControlLabel, Radio, RadioGroup } from '@mui/mate
 import '../../Mapper.css';
 import { useMapStore } from "../../shared/store";
 import { TileProvider } from "../../shared/types";
-import { tileSourceColors, tileSourceNames, tileSourceTypes } from "../..//shared/constants";
+import { tileSourceColors, tileSourceEnable, tileSourceNames, tileSourceTypes } from "../..//shared/constants";
 import { SortRectangle } from "./SortRectangle";
 
 export const TileSelectorGroup: FC = () => {
@@ -23,14 +23,16 @@ export const TileSelectorGroup: FC = () => {
   };
 
   const sortedArray = useMemo((): Map<TileProvider, string> => {
+    const filteredSources = [...tileSourceNames.entries()].filter(([key]) => tileSourceEnable.get(key));
+
     if (sortBy === 'name') {
-      return new Map([...tileSourceNames.entries()].sort((a, b) => sortOrder === 'asc'
+      return new Map(filteredSources.sort((a, b) => sortOrder === 'asc'
         ? a[1].localeCompare(b[1])
         : b[1].localeCompare(a[1])
       ));
     } else {
       // Sort by type
-      return new Map([...tileSourceNames.entries()].sort((a, b) => sortOrder === 'asc'
+      return new Map(filteredSources.sort((a, b) => sortOrder === 'asc'
         ? tileSourceTypes.get(a[0]).localeCompare(tileSourceTypes.get(b[0]))
         : tileSourceTypes.get(b[0]).localeCompare(tileSourceTypes.get(a[0]))
       ));
