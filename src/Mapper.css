@@ -37,12 +37,6 @@
     opacity: 1;
     will-change: opacity, transform;
 
-     /* AEG unused yet */
-    /* &.is-hidden {
-      display: none !important;
-      pointer-events: none !important;
-    } */
-
     &.markers-hidden {
       opacity: 0 !important;
       pointer-events: none !important;
@@ -54,12 +48,13 @@
       /* Optional: makes it look premium */
       filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
     }
-  }
 
-  /* & .markers-hidden .custom-marker {
-    opacity: 0 !important;
-    pointer-events: none !important;
-  } */
+    /* Increase opacity of outer marker circe on hover */
+    &:hover svg circle:nth-of-type(1) {
+      fill-opacity: 0.3 !important;
+      transition: fill-opacity 0.2s ease;
+    }
+  }
 
   .custom-tooltip {
     background-color: rgba(0, 0, 0, 0.8);

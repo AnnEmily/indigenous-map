@@ -178,9 +178,9 @@ export const addNationLayers = (map: L.Map, data: GeoJson) => {
         iconSize: [outerDiam, outerDiam],
         iconAnchor: [outerRadius, outerRadius],
         html: `
-          <div aria-label="${feature.properties.name}" style={{ border: '1px solid white' }}>
+          <div aria-label="${feature.properties.name}">
             <svg width="${outerDiam}" height="${outerDiam}" viewBox="0 0 ${outerDiam} ${outerDiam}" style="display: block;">
-              <circle cx="${outerRadius}" cy="${outerRadius}" r="${outerRadius}" fill="${color}" fill-opacity="0.3" />
+              <circle cx="${outerRadius}" cy="${outerRadius}" r="${outerRadius}" fill="${color}" fill-opacity="0" />
               <circle cx="${outerRadius}" cy="${outerRadius}" r="${innerRadius}" fill="${color}" stroke="white" stroke-width="2" />
             </svg>
           </div>
