@@ -102,7 +102,8 @@ export const addNationLayers = (map: L.Map, data: GeoJson) => {
     }
   });
 
-  const markersArray: L.CircleMarker[] = [];
+  // const markersArray: L.CircleMarker[] = [];
+  const markersArray: L.Marker[] = [];
 
   data.features.forEach((feature) => {
     const { id, nation, name, states } = feature.properties;
@@ -167,14 +168,35 @@ export const addNationLayers = (map: L.Map, data: GeoJson) => {
     //   })
     // });
 
-    const marker = L.circleMarker(center, {
-      radius: 6,
-      fillColor: color,
-      color: 'white',     // stroke color
-      weight: 2,          // stroke width
-      opacity: 1,         // stroke opacity
-      fillOpacity: 1
+    const outerRadius = 16;
+    const innerRadius = 6;
+    const outerDiam = outerRadius * 2;
+
+    const marker = L.marker(center, {
+      icon: L.divIcon({
+        className: `custom-marker nation-${nation} marker-${id}`,
+        iconSize: [outerDiam, outerDiam],
+        iconAnchor: [outerRadius, outerRadius],
+        html: `
+          <div aria-label="${feature.properties.name}" style={{ border: '1px solid white' }}>
+            <svg width="${outerDiam}" height="${outerDiam}" viewBox="0 0 ${outerDiam} ${outerDiam}" style="display: block;">
+              <circle cx="${outerRadius}" cy="${outerRadius}" r="${outerRadius}" fill="${color}" fill-opacity="0.3" />
+              <circle cx="${outerRadius}" cy="${outerRadius}" r="${innerRadius}" fill="${color}" stroke="white" stroke-width="2" />
+            </svg>
+          </div>
+        `
+      })
     });
+
+    // AEG working, but difficult hovering
+    // const marker = L.circleMarker(center, {
+    //   radius: 6,
+    //   fillColor: color,
+    //   color: 'white',     // stroke color
+    //   weight: 2,          // stroke width
+    //   opacity: 1,         // stroke opacity
+    //   fillOpacity: 1,
+    // });
 
     // Event Listeners
     const handleEnter = (e: L.LeafletMouseEvent) => {
@@ -199,7 +221,7 @@ export const addNationLayers = (map: L.Map, data: GeoJson) => {
       nation,
       bounds: visibilityBounds,
       states: states || [],
-      container: "cluster" as "cluster" | "map" | null
+      container: "cluster" as "cluster" | "map" | null // AEG removable ?
     };
 
     markersArray.push(marker);

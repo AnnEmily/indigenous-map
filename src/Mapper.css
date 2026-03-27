@@ -32,10 +32,16 @@
   width: 100%;
 
   & .custom-marker {
-    display: none !important;
+    /* display: none !important; */
     transition: opacity 0.4s ease-in-out;
     opacity: 1;
     will-change: opacity, transform;
+
+     /* AEG unused yet */
+    &.is-hidden {
+      display: none !important;
+      pointer-events: none !important;
+    }
 
     & svg {
       /* This scale keeps the dot proportional to zoom without moving its center */
@@ -43,6 +49,11 @@
       /* Optional: makes it look premium */
       filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
     }
+  }
+
+  & .markers-hidden .custom-marker {
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 
   .custom-tooltip {
@@ -78,7 +89,7 @@
         outline: none !important;
       }
     }
-  } 
+  }
 
   .leaflet-tooltip-pane {
     /* Target the generic Leaflet tooltip container to prevent the white flash */

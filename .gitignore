@@ -8,6 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 my_notes*
+my_files*
 node_modules
 dist-ssr
 *.local

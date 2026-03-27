@@ -24,7 +24,8 @@ export const useLeafletMap = (
   const mapRef = useRef<L.Map | null>(null);
   const syncRef = useRef<() => void>(() => {});
   const tileLayerRef = useRef<L.Layer | null>(null);
-  const allMarkersRef = useRef<L.CircleMarker[]>([]);
+  // const allMarkersRef = useRef<L.CircleMarker[]>([]);
+  const allMarkersRef = useRef<L.Marker[]>([]);
   const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
   const hullLayersRef = useRef<Map<Nation, L.Polygon>>(new Map());
   const hullLabelRef = useRef<Map<Nation, L.Marker>>(new Map());
@@ -208,7 +209,8 @@ export const useLeafletMap = (
                 meta.container = "map";
               }
             }
-            // Handle Dot-vs-Polygon swap within the cluster
+
+            // Handle Dot-vs-Polygon swap
             const nw = map.latLngToLayerPoint(bounds.getNorthWest());
             const se = map.latLngToLayerPoint(bounds.getSouthEast());
             const pixelArea = Math.abs(se.x - nw.x) * Math.abs(se.y - nw.y);
@@ -216,14 +218,27 @@ export const useLeafletMap = (
             const polygonThreshold = forcePolygons ? 0 : MIN_PIXEL_AREA;
             const shouldShowPin = pixelArea < polygonThreshold;
 
+            const element = marker.getElement();
+            
+            // AEG ole stoffe for CircleMarker
             // Adjust dot to zoom factor
-            marker.setRadius(radius);
-            marker.setStyle({
-              weight,
-              opacity: shouldShowPin ? 1 : 0,
-              fillOpacity: shouldShowPin ? 1 : 0,
-              interactive: shouldShowPin,
-            });
+            // marker.setRadius(radius);
+
+            if (element) {
+              if (forcePolygons) {
+                element.classList.toggle('is-hidden', true);
+              } else if (pixelArea > MIN_PIXEL_AREA) {
+                element.classList.toggle('is-hidden', true);
+              } else {
+                element.classList.toggle('is-hidden', false);
+              }
+            }
+            // marker.setStyle({
+            //   weight,
+            //   opacity: shouldShowPin ? 1 : 0,
+            //   fillOpacity: shouldShowPin ? 1 : 0,
+            //   interactive: shouldShowPin,
+            // });
           } else {
             // Physically remove from cluster so the bubble number updates
             clusterGroup.removeLayer(marker);
@@ -232,14 +247,18 @@ export const useLeafletMap = (
           }
         });
       } else {
+        // AEG return back
         // Hide all markers when hull mode is active
-        allMarkersRef.current.forEach((marker) => {
-          marker.setStyle({
-            opacity: 0,
-            fillOpacity: 0,
-            interactive: false,
-          });
-        });
+        mapRef.current.getContainer().classList.add('markers-hidden');
+
+        // AEG ole stoffe with CircleMarker
+        // allMarkersRef.current.forEach((marker) => {
+        //   marker.setStyle({
+        //     opacity: 0,
+        //     fillOpacity: 0,
+        //     interactive: false,
+        //   });
+        // });
       }
       
       // Enable or not polygons visibility

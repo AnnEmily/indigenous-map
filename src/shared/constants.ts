@@ -3,7 +3,7 @@ import { Nation, Panel, State, TileProvider, TileProviderOptions } from "./types
 // Minimum area in pixels to display a polygon instead of a pin on the map
 export const MIN_PIXEL_AREA = 2000;
 // Clustering parameters
-export const DISABLE_CLUSTERING_AT_ZOOM = 6;
+export const DISABLE_CLUSTERING_AT_ZOOM = 8;
 export const MAX_CLUSTER_RADIUS = 45;
 
 const panelLabels: Record<Panel, string> = {

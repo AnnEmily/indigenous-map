@@ -2,7 +2,6 @@ import { FC } from "react";
 
 import { useMapStore } from "../../shared/store";
 import { CheckboxSelector, PanelDropdown } from "../../shared/components";
-import { DISABLE_CLUSTERING_AT_ZOOM } from "../../shared/constants";
 
 export const SettingsPanel: FC = () => {
     const enableClustering = useMapStore(s => s.enableClustering);
@@ -10,7 +9,6 @@ export const SettingsPanel: FC = () => {
     const showConvexHulls = useMapStore(s => s.showConvexHulls);
     const showCoords = useMapStore(s => s.showCoords);
     const showZoom = useMapStore(s => s.showZoom);
-    const zoomFactor = useMapStore(s => s.viewport.zoom);
 
     const toggleEnableClustering = useMapStore(s => s.toggleEnableClustering);
     const toggleForcePolygons = useMapStore(s => s.toggleForcePolygons);
@@ -22,13 +20,26 @@ export const SettingsPanel: FC = () => {
     <PanelDropdown panelId="settings">
       <CheckboxSelector label="Show Lat/Long" checked={showCoords} onToggle={toggleShowCoords} />
       <CheckboxSelector label="Show zoom factor" checked={showZoom} onToggle={toggleShowZoom} />
-      <CheckboxSelector label="Show nations spread" checked={showConvexHulls} onToggle={toggleShowConvexHulls} />
-      <CheckboxSelector label="Show community polygons" checked={forcePolygons} onToggle={toggleForcePolygons} />
+      
+      <CheckboxSelector
+        label="Show nations spread"
+        checked={showConvexHulls}
+        onToggle={toggleShowConvexHulls}
+        disabled={enableClustering}
+      />
+      
+      <CheckboxSelector
+        label="Show community polygons"
+        checked={forcePolygons}
+        onToggle={toggleForcePolygons}
+        disabled={showConvexHulls}
+      />
+
       <CheckboxSelector
         label="Group communities"
         checked={enableClustering}
         onToggle={toggleEnableClustering}
-        disabled={zoomFactor >= DISABLE_CLUSTERING_AT_ZOOM}
+        disabled={showConvexHulls}
       />
     </PanelDropdown>
   
