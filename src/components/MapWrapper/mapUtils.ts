@@ -339,6 +339,14 @@ export function getClosedCoords(latLngs: L.LatLng[]): [number, number][] {
   return isOpenRing(coords) ? [...coords, coords[0]] : coords;
 }
 
+export function getPolygonArea (map: L.Map, bounds: L.LatLngBounds): number {
+  const nw = map.latLngToLayerPoint(bounds.getNorthWest());
+  const se = map.latLngToLayerPoint(bounds.getSouthEast());
+  const polygonArea = Math.abs(se.x - nw.x) * Math.abs(se.y - nw.y);
+
+  return polygonArea;
+};
+
 export const isOpenRing = (ring: Position[]): boolean => {
   const first = ring[0];
   const last = ring[ring.length - 1];
@@ -410,6 +418,18 @@ export const sanityCheckGeoJson = (data: GeoJson) => {
       geom.coordinates.forEach((polygons, i) => {
         warnForOpenRing(polygons, i, feature.properties.id);
       });
+    }
+  });
+};
+
+export const setMarkersVisibility = (markers: L.Marker[], visible: boolean) => {
+  markers.forEach(marker => {
+    const element = marker.getElement();
+
+    if (visible) {
+      element?.classList.toggle('markers-hidden', false);
+    } else {
+      element?.classList.toggle('markers-hidden', true);
     }
   });
 };

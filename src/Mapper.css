@@ -38,8 +38,13 @@
     will-change: opacity, transform;
 
      /* AEG unused yet */
-    &.is-hidden {
+    /* &.is-hidden {
       display: none !important;
+      pointer-events: none !important;
+    } */
+
+    &.markers-hidden {
+      opacity: 0 !important;
       pointer-events: none !important;
     }
 
@@ -51,10 +56,10 @@
     }
   }
 
-  & .markers-hidden .custom-marker {
+  /* & .markers-hidden .custom-marker {
     opacity: 0 !important;
     pointer-events: none !important;
-  }
+  } */
 
   .custom-tooltip {
     background-color: rgba(0, 0, 0, 0.8);
