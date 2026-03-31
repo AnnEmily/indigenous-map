@@ -4,7 +4,14 @@ import * as turf from '@turf/turf';
 import 'leaflet.markercluster';
 
 import { GeoJson, MarkerMeta, Nation, TileProvider } from "../../shared/types";
-import { DISABLE_CLUSTERING_AT_ZOOM, MAX_CLUSTER_RADIUS, MIN_PIXEL_AREA, nationColorMap, providerConfigs } from "../../shared/constants";
+import {
+  DISABLE_CLUSTERING_AT_ZOOM,
+  MARKER_OUTER_RADIUS,
+  MAX_CLUSTER_RADIUS,
+  MIN_PIXEL_AREA,
+  nationColorMap,
+  providerConfigs,
+} from "../../shared/constants";
 
 export const addCoordsControl = (map: L.Map) => {
   const coordsControl = new L.Control({ position: "bottomleft" });
@@ -59,9 +66,9 @@ export const addNationLayers = (map: L.Map, data: GeoJson) => {
   // Initialize the cluster group
   const clusterGroup = L.markerClusterGroup({
     showCoverageOnHover: false,
-    maxClusterRadius: MAX_CLUSTER_RADIUS, // increase to make clustering more "aggressive"
+    maxClusterRadius: MAX_CLUSTER_RADIUS,
     spiderfyOnMaxZoom: true,
-    disableClusteringAtZoom: DISABLE_CLUSTERING_AT_ZOOM, // stop clustering when zoomed in enough
+    disableClusteringAtZoom: DISABLE_CLUSTERING_AT_ZOOM,
 
     iconCreateFunction: (cluster) => {
       const markers = cluster.getAllChildMarkers();
@@ -102,7 +109,7 @@ export const addNationLayers = (map: L.Map, data: GeoJson) => {
     }
   });
 
-  const markersArray: L.CircleMarker[] = [];
+  const markersArray: L.Marker[] = [];
 
   data.features.forEach((feature) => {
     const { id, nation, name, states } = feature.properties;
@@ -151,29 +158,23 @@ export const addNationLayers = (map: L.Map, data: GeoJson) => {
       }
     });
 
-    // AEG
-    // const marker = L.marker(center, {
-    //   icon: L.divIcon({
-    //     className: `custom-marker nation-${nation} marker-${id}`,
-    //     iconSize: [24, 24],
-    //     iconAnchor: [12, 12],
-    //     html: `
-    //       <div aria-label="${feature.properties.name}">
-    //         <svg width="24" height="24" viewBox="0 0 24 24" style="display: block;">
-    //           <circle cx="12" cy="12" r="6" fill="${color}" stroke="white" stroke-width="2" />
-    //         </svg>
-    //       </div>
-    //     `
-    //   })
-    // });
+    const outerRadius = MARKER_OUTER_RADIUS;
+    const outerDiam = outerRadius * 2;
 
-    const marker = L.circleMarker(center, {
-      radius: 6,
-      fillColor: color,
-      color: 'white',     // stroke color
-      weight: 2,          // stroke width
-      opacity: 1,         // stroke opacity
-      fillOpacity: 1
+    const marker = L.marker(center, {
+      icon: L.divIcon({
+        className: `custom-marker nation-${nation} marker-${id}`,
+        iconSize: [outerDiam, outerDiam],
+        iconAnchor: [outerRadius, outerRadius],
+        html: `
+          <div aria-label="${feature.properties.name}">
+            <svg width="100%" height="100%">
+              <circle class="outer" cx="50%" cy="50%" fill="${color}" fill-opacity="0" />
+              <circle class="inner" cx="50%" cy="50%" fill="${color}" stroke="white" />
+            </svg>
+          </div>
+        `
+      })
     });
 
     // Event Listeners
@@ -199,7 +200,7 @@ export const addNationLayers = (map: L.Map, data: GeoJson) => {
       nation,
       bounds: visibilityBounds,
       states: states || [],
-      container: "cluster" as "cluster" | "map" | null
+      container: "cluster" as "cluster" | "map" | null // AEG removable ?
     };
 
     markersArray.push(marker);
@@ -317,6 +318,14 @@ export function getClosedCoords(latLngs: L.LatLng[]): [number, number][] {
   return isOpenRing(coords) ? [...coords, coords[0]] : coords;
 }
 
+export function getPolygonArea (map: L.Map, bounds: L.LatLngBounds): number {
+  const nw = map.latLngToLayerPoint(bounds.getNorthWest());
+  const se = map.latLngToLayerPoint(bounds.getSouthEast());
+  const polygonArea = Math.abs(se.x - nw.x) * Math.abs(se.y - nw.y);
+
+  return polygonArea;
+};
+
 export const isOpenRing = (ring: Position[]): boolean => {
   const first = ring[0];
   const last = ring[ring.length - 1];
@@ -388,6 +397,30 @@ export const sanityCheckGeoJson = (data: GeoJson) => {
       geom.coordinates.forEach((polygons, i) => {
         warnForOpenRing(polygons, i, feature.properties.id);
       });
+    }
+  });
+};
+
+export const setMarkersSize = (zoomFactor: number) => {
+  const innerRadius = zoomFactor < 6 ? zoomFactor : 6;
+  const outerRadius = Math.round(innerRadius * 2.6);
+  const innerStroke = zoomFactor < 4 ? 0 : zoomFactor < 6 ? 0.7 : 1;
+
+  const root = document.documentElement;
+
+  root.style.setProperty('--marker-outer-radius', `${outerRadius}px`);
+  root.style.setProperty('--marker-inner-radius', `${innerRadius}px`);
+  root.style.setProperty('--marker-inner-stroke', `${innerStroke}px`);
+};
+
+export const setMarkersVisibility = (markers: L.Marker[], visible: boolean) => {
+  markers.forEach(marker => {
+    const element = marker.getElement();
+
+    if (visible) {
+      element?.classList.toggle('markers-hidden', false);
+    } else {
+      element?.classList.toggle('markers-hidden', true);
     }
   });
 };

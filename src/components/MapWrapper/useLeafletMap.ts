@@ -13,6 +13,9 @@ import {
   getClosedCoords,
   processPolygonsLayer,
   sanityCheckGeoJson,
+  getPolygonArea,
+  setMarkersVisibility,
+  setMarkersSize,
 } from "./mapUtils";
 import { MarkerMeta, Nation } from "../../shared/types";
 import { useMapStore } from "../../shared/store";
@@ -24,7 +27,7 @@ export const useLeafletMap = (
   const mapRef = useRef<L.Map | null>(null);
   const syncRef = useRef<() => void>(() => {});
   const tileLayerRef = useRef<L.Layer | null>(null);
-  const allMarkersRef = useRef<L.CircleMarker[]>([]);
+  const allMarkersRef = useRef<L.Marker[]>([]);
   const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
   const hullLayersRef = useRef<Map<Nation, L.Polygon>>(new Map());
   const hullLabelRef = useRef<Map<Nation, L.Marker>>(new Map());
@@ -178,9 +181,8 @@ export const useLeafletMap = (
 
       // Enable or not markers visibility
       if (!showConvexHulls) {
-        const zoom = map.getZoom();
-        const radius = zoom < 6 ? zoom : 6;
-        const weight = zoom < 4 ? 0 : zoom < 6 ? 0.7 : 1;
+        const visibleMarkers: L.Marker[] = [];
+        const hiddenMarkers: L.Marker[] = [];
 
         allMarkersRef.current.forEach((marker) => {
           // Cast to any to access our custom _meta property
@@ -208,22 +210,15 @@ export const useLeafletMap = (
                 meta.container = "map";
               }
             }
-            // Handle Dot-vs-Polygon swap within the cluster
-            const nw = map.latLngToLayerPoint(bounds.getNorthWest());
-            const se = map.latLngToLayerPoint(bounds.getSouthEast());
-            const pixelArea = Math.abs(se.x - nw.x) * Math.abs(se.y - nw.y);
-            
-            const polygonThreshold = forcePolygons ? 0 : MIN_PIXEL_AREA;
-            const shouldShowPin = pixelArea < polygonThreshold;
 
-            // Adjust dot to zoom factor
-            marker.setRadius(radius);
-            marker.setStyle({
-              weight,
-              opacity: shouldShowPin ? 1 : 0,
-              fillOpacity: shouldShowPin ? 1 : 0,
-              interactive: shouldShowPin,
-            });
+            // Handle Dot-vs-Polygon swap
+            const polygonArea = getPolygonArea(map, bounds);
+
+            if (forcePolygons || polygonArea > MIN_PIXEL_AREA) {
+              hiddenMarkers.push(marker);
+            } else {
+              visibleMarkers.push(marker);
+            }
           } else {
             // Physically remove from cluster so the bubble number updates
             clusterGroup.removeLayer(marker);
@@ -231,15 +226,19 @@ export const useLeafletMap = (
             meta.container = null;
           }
         });
+
+        const zoom = map.getZoom();
+        setMarkersSize(zoom);
+
+        setMarkersVisibility(visibleMarkers, true);
+        setMarkersVisibility(hiddenMarkers, false);
+
       } else {
         // Hide all markers when hull mode is active
-        allMarkersRef.current.forEach((marker) => {
-          marker.setStyle({
-            opacity: 0,
-            fillOpacity: 0,
-            interactive: false,
-          });
-        });
+        setMarkersVisibility(allMarkersRef.current, false);
+        
+        // AEG Another method, but non-selective
+        // mapRef.current.getContainer().classList.add('markers-hidden');
       }
       
       // Enable or not polygons visibility
@@ -253,11 +252,11 @@ export const useLeafletMap = (
       const hullLayers = hullLayersRef.current;
 
       hullLayers.forEach((layer, nation) => {
-        const shouldShow = showConvexHulls && activeNations.includes(nation);
+        const shouldShowHull = showConvexHulls && activeNations.includes(nation);
 
         layer.setStyle({
-          opacity: shouldShow ? 0.8 : 0,
-          fillOpacity: shouldShow ? 0.25 : 0
+          opacity: shouldShowHull ? 0.8 : 0,
+          fillOpacity: shouldShowHull ? 0.25 : 0
         });
       });
 
