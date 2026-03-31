@@ -29,7 +29,7 @@ export const SettingsPanel: FC = () => {
       />
       
       <CheckboxSelector
-        label="Show community polygons"
+        label="Show community spread"
         checked={forcePolygons}
         onToggle={toggleForcePolygons}
         disabled={showConvexHulls}

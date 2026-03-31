@@ -32,10 +32,24 @@
   width: 100%;
 
   & .custom-marker {
-    /* display: none !important; */
+    width: calc(var(--marker-outer-radius) * 2) !important;
+    height: calc(var(--marker-outer-radius) * 2) !important;
+    /* L'ancrage Leaflet pour rester centré */
+    margin-left: calc(var(--marker-outer-radius) * -1) !important;
+    margin-top: calc(var(--marker-outer-radius) * -1) !important;
+    
     transition: opacity 0.4s ease-in-out;
     opacity: 1;
     will-change: opacity, transform;
+
+    & circle.outer {
+      r: var(--marker-outer-radius);
+    }
+
+    & circle.inner {
+      r: var(--marker-inner-radius);
+      stroke-width: var(--marker-inner-stroke);
+    }
 
     &.markers-hidden {
       opacity: 0 !important;
@@ -43,9 +57,6 @@
     }
 
     & svg {
-      /* This scale keeps the dot proportional to zoom without moving its center */
-      transform: scale(calc(0.5 + (var(--map-zoom) * 0.05)));
-      /* Optional: makes it look premium */
       filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
     }
 

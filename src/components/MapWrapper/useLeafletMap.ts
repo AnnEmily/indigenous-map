@@ -15,6 +15,7 @@ import {
   sanityCheckGeoJson,
   getPolygonArea,
   setMarkersVisibility,
+  setMarkersSize,
 } from "./mapUtils";
 import { MarkerMeta, Nation } from "../../shared/types";
 import { useMapStore } from "../../shared/store";
@@ -26,7 +27,6 @@ export const useLeafletMap = (
   const mapRef = useRef<L.Map | null>(null);
   const syncRef = useRef<() => void>(() => {});
   const tileLayerRef = useRef<L.Layer | null>(null);
-  // const allMarkersRef = useRef<L.CircleMarker[]>([]);
   const allMarkersRef = useRef<L.Marker[]>([]);
   const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
   const hullLayersRef = useRef<Map<Nation, L.Polygon>>(new Map());
@@ -181,10 +181,6 @@ export const useLeafletMap = (
 
       // Enable or not markers visibility
       if (!showConvexHulls) {
-        const zoom = map.getZoom();
-        const radius = zoom < 6 ? zoom : 6;
-        const weight = zoom < 4 ? 0 : zoom < 6 ? 0.7 : 1;
-
         const visibleMarkers: L.Marker[] = [];
         const hiddenMarkers: L.Marker[] = [];
 
@@ -217,23 +213,12 @@ export const useLeafletMap = (
 
             // Handle Dot-vs-Polygon swap
             const polygonArea = getPolygonArea(map, bounds);
-                        
-            // AEG ole stoffe for CircleMarker
-            // Adjust dot to zoom factor
-            // marker.setRadius(radius);
 
             if (forcePolygons || polygonArea > MIN_PIXEL_AREA) {
               hiddenMarkers.push(marker);
             } else {
               visibleMarkers.push(marker);
             }
-
-            // marker.setStyle({
-            //   weight,
-            //   opacity: shouldShowPin ? 1 : 0,
-            //   fillOpacity: shouldShowPin ? 1 : 0,
-            //   interactive: shouldShowPin,
-            // });
           } else {
             // Physically remove from cluster so the bubble number updates
             clusterGroup.removeLayer(marker);
@@ -242,22 +227,18 @@ export const useLeafletMap = (
           }
         });
 
+        const zoom = map.getZoom();
+        setMarkersSize(zoom);
+
         setMarkersVisibility(visibleMarkers, true);
         setMarkersVisibility(hiddenMarkers, false);
 
       } else {
         // Hide all markers when hull mode is active
         setMarkersVisibility(allMarkersRef.current, false);
+        
+        // AEG Another method, but non-selective
         // mapRef.current.getContainer().classList.add('markers-hidden');
-
-        // AEG ole stoffe with CircleMarker
-        // allMarkersRef.current.forEach((marker) => {
-        //   marker.setStyle({
-        //     opacity: 0,
-        //     fillOpacity: 0,
-        //     interactive: false,
-        //   });
-        // });
       }
       
       // Enable or not polygons visibility
@@ -271,11 +252,11 @@ export const useLeafletMap = (
       const hullLayers = hullLayersRef.current;
 
       hullLayers.forEach((layer, nation) => {
-        const shouldShow = showConvexHulls && activeNations.includes(nation);
+        const shouldShowHull = showConvexHulls && activeNations.includes(nation);
 
         layer.setStyle({
-          opacity: shouldShow ? 0.8 : 0,
-          fillOpacity: shouldShow ? 0.25 : 0
+          opacity: shouldShowHull ? 0.8 : 0,
+          fillOpacity: shouldShowHull ? 0.25 : 0
         });
       });
 

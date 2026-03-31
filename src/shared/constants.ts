@@ -1,10 +1,17 @@
 import { Nation, Panel, State, TileProvider, TileProviderOptions } from "./types";
 
+// Initial values for dot markers, in pixels.
+// Will be adjusted according to zoom factor.
+export const MARKER_INNER_RADIUS = 16;
+export const MARKER_OUTER_RADIUS = 6;
+export const MARKER_INNER_STROKE = 2;
+
 // Minimum area in pixels to display a polygon instead of a pin on the map
 export const MIN_PIXEL_AREA = 2000;
+
 // Clustering parameters
-export const DISABLE_CLUSTERING_AT_ZOOM = 8;
-export const MAX_CLUSTER_RADIUS = 45;
+export const DISABLE_CLUSTERING_AT_ZOOM = 8; // stop clustering when zoomed in enough
+export const MAX_CLUSTER_RADIUS = 45; // increase to make clustering more "aggressive"
 
 const panelLabels: Record<Panel, string> = {
   settings: 'Display Settings',

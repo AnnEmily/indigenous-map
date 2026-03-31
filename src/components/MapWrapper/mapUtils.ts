@@ -4,7 +4,14 @@ import * as turf from '@turf/turf';
 import 'leaflet.markercluster';
 
 import { GeoJson, MarkerMeta, Nation, TileProvider } from "../../shared/types";
-import { DISABLE_CLUSTERING_AT_ZOOM, MAX_CLUSTER_RADIUS, MIN_PIXEL_AREA, nationColorMap, providerConfigs } from "../../shared/constants";
+import {
+  DISABLE_CLUSTERING_AT_ZOOM,
+  MARKER_OUTER_RADIUS,
+  MAX_CLUSTER_RADIUS,
+  MIN_PIXEL_AREA,
+  nationColorMap,
+  providerConfigs,
+} from "../../shared/constants";
 
 export const addCoordsControl = (map: L.Map) => {
   const coordsControl = new L.Control({ position: "bottomleft" });
@@ -59,9 +66,9 @@ export const addNationLayers = (map: L.Map, data: GeoJson) => {
   // Initialize the cluster group
   const clusterGroup = L.markerClusterGroup({
     showCoverageOnHover: false,
-    maxClusterRadius: MAX_CLUSTER_RADIUS, // increase to make clustering more "aggressive"
+    maxClusterRadius: MAX_CLUSTER_RADIUS,
     spiderfyOnMaxZoom: true,
-    disableClusteringAtZoom: DISABLE_CLUSTERING_AT_ZOOM, // stop clustering when zoomed in enough
+    disableClusteringAtZoom: DISABLE_CLUSTERING_AT_ZOOM,
 
     iconCreateFunction: (cluster) => {
       const markers = cluster.getAllChildMarkers();
@@ -102,7 +109,6 @@ export const addNationLayers = (map: L.Map, data: GeoJson) => {
     }
   });
 
-  // const markersArray: L.CircleMarker[] = [];
   const markersArray: L.Marker[] = [];
 
   data.features.forEach((feature) => {
@@ -152,24 +158,7 @@ export const addNationLayers = (map: L.Map, data: GeoJson) => {
       }
     });
 
-    // AEG
-    // const marker = L.marker(center, {
-    //   icon: L.divIcon({
-    //     className: `custom-marker nation-${nation} marker-${id}`,
-    //     iconSize: [24, 24],
-    //     iconAnchor: [12, 12],
-    //     html: `
-    //       <div aria-label="${feature.properties.name}">
-    //         <svg width="24" height="24" viewBox="0 0 24 24" style="display: block;">
-    //           <circle cx="12" cy="12" r="6" fill="${color}" stroke="white" stroke-width="2" />
-    //         </svg>
-    //       </div>
-    //     `
-    //   })
-    // });
-
-    const outerRadius = 16;
-    const innerRadius = 6;
+    const outerRadius = MARKER_OUTER_RADIUS;
     const outerDiam = outerRadius * 2;
 
     const marker = L.marker(center, {
@@ -179,24 +168,14 @@ export const addNationLayers = (map: L.Map, data: GeoJson) => {
         iconAnchor: [outerRadius, outerRadius],
         html: `
           <div aria-label="${feature.properties.name}">
-            <svg width="${outerDiam}" height="${outerDiam}" viewBox="0 0 ${outerDiam} ${outerDiam}" style="display: block;">
-              <circle cx="${outerRadius}" cy="${outerRadius}" r="${outerRadius}" fill="${color}" fill-opacity="0" />
-              <circle cx="${outerRadius}" cy="${outerRadius}" r="${innerRadius}" fill="${color}" stroke="white" stroke-width="2" />
+            <svg width="100%" height="100%">
+              <circle class="outer" cx="50%" cy="50%" fill="${color}" fill-opacity="0" />
+              <circle class="inner" cx="50%" cy="50%" fill="${color}" stroke="white" />
             </svg>
           </div>
         `
       })
     });
-
-    // AEG working, but difficult hovering
-    // const marker = L.circleMarker(center, {
-    //   radius: 6,
-    //   fillColor: color,
-    //   color: 'white',     // stroke color
-    //   weight: 2,          // stroke width
-    //   opacity: 1,         // stroke opacity
-    //   fillOpacity: 1,
-    // });
 
     // Event Listeners
     const handleEnter = (e: L.LeafletMouseEvent) => {
@@ -420,6 +399,18 @@ export const sanityCheckGeoJson = (data: GeoJson) => {
       });
     }
   });
+};
+
+export const setMarkersSize = (zoomFactor: number) => {
+  const innerRadius = zoomFactor < 6 ? zoomFactor : 6;
+  const outerRadius = Math.round(innerRadius * 2.6);
+  const innerStroke = zoomFactor < 4 ? 0 : zoomFactor < 6 ? 0.7 : 1;
+
+  const root = document.documentElement;
+
+  root.style.setProperty('--marker-outer-radius', `${outerRadius}px`);
+  root.style.setProperty('--marker-inner-radius', `${innerRadius}px`);
+  root.style.setProperty('--marker-inner-stroke', `${innerStroke}px`);
 };
 
 export const setMarkersVisibility = (markers: L.Marker[], visible: boolean) => {
