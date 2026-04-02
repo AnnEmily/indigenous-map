@@ -110,7 +110,23 @@ export const useMapStore = create<MapState>()(
       // item name in localStorage
       name: 'map-settings-storage',
 
-      // Only persist these specific fields on reset
+      // Version of the persisted data (not the same as app version)
+      version: 1,
+
+      // Migrate new fields to be persisted. Otherwise, they are not added to an existing localStorage
+      migrate: (persistedState: Partial<MapData>, version: number) => {
+        if (version < 1) {
+          return {
+            ...persistedState,
+            tileSortBy: initialState.tileSortBy,
+            tileSortOrder: initialState.tileSortOrder,
+          };
+        }
+
+        return persistedState;
+      },
+
+      // Only persist these specific fields across sessions
       partialize: (state) => ({
         enableClustering: state.enableClustering,
         openPanels: state.openPanels,
