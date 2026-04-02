@@ -2,15 +2,7 @@ import { create } from 'zustand';
 
 import { GeoJson, Nation, NATIONS, State, STATES } from '../types';
 
-// AEG
-// type StateCommunities = {
-//   state: State;
-//   comm: string[];
-// }
-
 export interface DataFields {
-  // communitiesStatesByNation: { nation: Nation; stateCommunities: StateCommunities }[];
-  // communitiesStatesByNation: Map<Nation, StateCommunities[]>;
   communitiesStatesByNation: Map<Nation, Map<State, string[]>>;
 
   communityCountByNation: Map<Nation, number>;
@@ -104,12 +96,12 @@ export const getGroupingStats = (geoJson: GeoJson): Partial<DataFields> => {
     statesByNation.set(nation, states);
   });
 
-  console.log('communityCountByNation', communityCountByNation);
-  console.log('communityCountByState', communityCountByState);
-  console.log('nationsByState', nationsByState);
-  console.log('statesByNation', statesByNation);
-  console.log('nationCountByState', nationCountByState);
-  console.log('communitiesStatesByNation', communitiesStatesByNation);
+  // console.log('communityCountByNation', communityCountByNation);
+  // console.log('communityCountByState', communityCountByState);
+  // console.log('nationsByState', nationsByState);
+  // console.log('statesByNation', statesByNation);
+  // console.log('nationCountByState', nationCountByState);
+  // console.log('communitiesStatesByNation', communitiesStatesByNation);
   
   return {
     communityCountByNation,
