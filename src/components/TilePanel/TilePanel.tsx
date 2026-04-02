@@ -6,7 +6,7 @@ import { TileSelectorGroup } from "../TileSelectorGroup";
 export const TilePanel: FC = () => {
   
   return (
-    <PanelDropdown panelId="tileSource">
+    <PanelDropdown panelId="tileSource" aria-label="Select map source">
       <TileSelectorGroup />
     </PanelDropdown>
   
