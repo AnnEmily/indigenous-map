@@ -3,10 +3,12 @@ import { Box } from '@mui/material';
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
+import { SortOrder } from '../../shared/types';
+
 interface SortRectProps {
   label: string;
   isActive: boolean; // show arrow in this rectangle
-  sortOrder: 'asc' | 'desc';
+  sortOrder: SortOrder;
   onClick: () => void;
   color?: string;
   width?: number;

@@ -1,58 +1,61 @@
-import { useMemo, useState, type FC } from "react";
+import { useMemo, type FC } from "react";
 import { Box, FormControl, FormControlLabel, Radio, RadioGroup } from '@mui/material';
 
 import '../../Mapper.css';
 import { useMapStore } from "../../shared/store";
-import { TileProvider } from "../../shared/types";
+import { TileProvider, TileSortBy } from "../../shared/types";
 import { tileSourceColors, tileSourceEnable, tileSourceNames, tileSourceTypes } from "../..//shared/constants";
 import { SortRectangle } from "./SortRectangle";
 
 export const TileSelectorGroup: FC = () => {
-  const tileSource = useMapStore(state => state.tileSource);
   const setTileSource = useMapStore(state => state.setTileSource);
+  const toggleTileSortBy = useMapStore(state => state.toggleTileSortBy);
+  const toggleTileSortOrder = useMapStore(state => state.toggleTileSortOrder);
+  const tileSortBy = useMapStore(state => state.tileSortBy);
+  const tileSortOrder = useMapStore(state => state.tileSortOrder);
+  const tileSource = useMapStore(state => state.tileSource);
 
-  const [sortBy, setSortBy] = useState<'name' | 'type'>('name');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-
-  const handleClick = (sortType: 'name' | 'type') => {
-    if (sortBy === sortType) {
-      setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
+  const handleClick = (sortBy: TileSortBy) => {
+    if (tileSortBy === sortBy) {
+      // User clicked on the column header that leads the sort: revert sort order
+      toggleTileSortOrder();
     } else {
-      setSortBy(sortType);
+      // User clicked on the other column
+      toggleTileSortBy();
     }
   };
 
   const sortedArray = useMemo((): Map<TileProvider, string> => {
     const filteredSources = [...tileSourceNames.entries()].filter(([key]) => tileSourceEnable.get(key));
 
-    if (sortBy === 'name') {
-      return new Map(filteredSources.sort((a, b) => sortOrder === 'asc'
+    if (tileSortBy === 'name') {
+      return new Map(filteredSources.sort((a, b) => tileSortOrder === 'asc'
         ? a[1].localeCompare(b[1])
         : b[1].localeCompare(a[1])
       ));
     } else {
       // Sort by type
-      return new Map(filteredSources.sort((a, b) => sortOrder === 'asc'
+      return new Map(filteredSources.sort((a, b) => tileSortOrder === 'asc'
         ? tileSourceTypes.get(a[0]).localeCompare(tileSourceTypes.get(b[0]))
         : tileSourceTypes.get(b[0]).localeCompare(tileSourceTypes.get(a[0]))
       ));
     }
-  }, [sortOrder, sortBy]);
+  }, [tileSortOrder, tileSortBy]);
   
   return (
     <>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '200px', paddingLeft: '32px', marginBottom: '5px' }}>
         <SortRectangle
           label="Sort by name"
-          isActive={sortBy === 'name'}
-          sortOrder={sortOrder}
+          isActive={tileSortBy === 'name'}
+          sortOrder={tileSortOrder}
           onClick={() => handleClick('name')}
           width={156}
         />
         <SortRectangle
           label="Sort by type"
-          isActive={sortBy === 'type'}
-          sortOrder={sortOrder}
+          isActive={tileSortBy === 'type'}
+          sortOrder={tileSortOrder}
           onClick={() => handleClick('type')}
         />
       </Box>

@@ -26,6 +26,9 @@ export const TILE_PROVIDERS = [
 ] as const;
 export type TileProvider = typeof TILE_PROVIDERS[number];
 
+export type TileSortBy = 'name' | 'type';
+export type SortOrder = 'asc' | 'desc';
+
 export const NATIONS = ['abenaki', 'anishinabe', 'attikamek', 'cree', 'innu', 'inuit', 'southern_inuit', 'micmac', 'mohawk', 'naskapi', 'wendat', 'wolastoqiyik'] as const;
 export type Nation = typeof NATIONS[number];
 

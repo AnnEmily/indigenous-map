@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import { Nation, NATIONS, Panel, State, STATES, TileProvider } from '../types';
+import { Nation, NATIONS, Panel, SortOrder, State, STATES, TileProvider, TileSortBy } from '../types';
 
 interface Viewport {
   lat: number;
@@ -18,36 +18,42 @@ interface MapData {
   showConvexHulls: boolean;
   showCoords: boolean;
   showZoom: boolean;
+  tileSortBy: TileSortBy;
+  tileSortOrder: SortOrder;
   tileSource: TileProvider;
   viewport: Viewport;
 }
 
 interface MapActions {
+  resetMap: () => void;
   setTileSource: (_ts: TileProvider) => void;
+  setViewport: (_v: Viewport) => void;
   toggleEnableClustering: () => void;
+  toggleForcePolygons: () => void;
   toggleShowConvexHulls: () => void;
   toggleShowCoords: () => void;
-  toggleForcePolygons: () => void;
   toggleShowZoom: () => void;
+  toggleTileSortBy: () => void;
+  toggleTileSortOrder: () => void;
   updateActiveNations: (_nation: Nation[], _add: boolean) => void;
   updateActiveStates: (_state: State[], _add: boolean) => void;
   updateOpenedPanels: (_panel: Panel, _open: boolean) => void;
-  setViewport: (_v: Viewport) => void;
-  resetMap: () => void;
 }
 
 export type MapState = MapData & MapActions;
 
 const initialState: MapData = {
-  enableClustering: true,
-  showConvexHulls: false,
-  showCoords: false,
-  forcePolygons: false,
-  showZoom: false,
-  tileSource: 'mbSatellite',
   activeNations: [...NATIONS],
   activeStates: [...STATES],
+  enableClustering: true,
+  forcePolygons: false,
   openPanels: ['nations', 'stateFilter', 'tileSource'],
+  showConvexHulls: false,
+  showCoords: false,
+  showZoom: false,
+  tileSortBy: 'name',
+  tileSortOrder: 'asc',
+  tileSource: 'mbSatellite',
   viewport: { lat: 54, lng: -69.7, zoom: 5 }, // QC full, centered in viewport
 };
 
@@ -69,6 +75,10 @@ export const useMapStore = create<MapState>()(
       toggleShowCoords: () => set(state => ({ showCoords: !state.showCoords })),
 
       toggleShowZoom: () => set(state => ({ showZoom: !state.showZoom })),
+
+      toggleTileSortBy: () => set((state) => ({ tileSortBy: state.tileSortBy === 'name' ? 'type' : 'name' })),
+
+      toggleTileSortOrder: () => set((state) => ({ tileSortOrder: state.tileSortOrder === 'asc' ? 'desc' : 'asc' })),
 
       updateActiveNations: (nations, add) => {
         if (add) {
@@ -104,6 +114,8 @@ export const useMapStore = create<MapState>()(
       partialize: (state) => ({
         enableClustering: state.enableClustering,
         openPanels: state.openPanels,
+        tileSortBy: state.tileSortBy,
+        tileSortOrder: state.tileSortOrder,
         tileSource: state.tileSource,
         showCoords: state.showCoords,
         showZoom: state.showZoom,
