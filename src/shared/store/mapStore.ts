@@ -17,6 +17,7 @@ interface MapData {
   forcePolygons: boolean;
   showConvexHulls: boolean;
   showCoords: boolean;
+  showScale: boolean;
   showZoom: boolean;
   tileSortBy: TileSortBy;
   tileSortOrder: SortOrder;
@@ -32,6 +33,7 @@ interface MapActions {
   toggleForcePolygons: () => void;
   toggleShowConvexHulls: () => void;
   toggleShowCoords: () => void;
+  toggleShowScale: () => void;
   toggleShowZoom: () => void;
   toggleTileSortBy: () => void;
   toggleTileSortOrder: () => void;
@@ -50,6 +52,7 @@ const initialState: MapData = {
   openPanels: ['nations', 'stateFilter', 'tileSource'],
   showConvexHulls: false,
   showCoords: false,
+  showScale: true,
   showZoom: false,
   tileSortBy: 'name',
   tileSortOrder: 'asc',
@@ -73,6 +76,8 @@ export const useMapStore = create<MapState>()(
       toggleForcePolygons: () => set(state => ({ forcePolygons: !state.forcePolygons })),
 
       toggleShowCoords: () => set(state => ({ showCoords: !state.showCoords })),
+
+      toggleShowScale: () => set(state => ({ showScale: !state.showScale })),
 
       toggleShowZoom: () => set(state => ({ showZoom: !state.showZoom })),
 
@@ -111,7 +116,7 @@ export const useMapStore = create<MapState>()(
       name: 'map-settings-storage',
 
       // Version of the persisted data (not the same as app version)
-      version: 1,
+      version: 2,
 
       // Migrate new fields to be persisted. Otherwise, they are not added to an existing localStorage
       migrate: (persistedState: Partial<MapData>, version: number) => {
@@ -120,6 +125,11 @@ export const useMapStore = create<MapState>()(
             ...persistedState,
             tileSortBy: initialState.tileSortBy,
             tileSortOrder: initialState.tileSortOrder,
+          };
+        } else if (version < 2) {
+          return {
+            ...persistedState,
+            showScale: initialState.showScale,
           };
         }
 
@@ -134,6 +144,7 @@ export const useMapStore = create<MapState>()(
         tileSortOrder: state.tileSortOrder,
         tileSource: state.tileSource,
         showCoords: state.showCoords,
+        showScale: state.showScale,
         showZoom: state.showZoom,
         viewport: state.viewport,
       }),

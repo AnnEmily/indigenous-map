@@ -6,8 +6,10 @@ export default defineConfig({
   plugins: [
     react(),
   ],
-  build: {
-    outDir: 'docs' // Output build to a folder named 'docs'
-  },
+  // AEG
+  // Below: when using a docs folder to serve. Drawback, we must build locally and push
+  // build: {
+  //   outDir: 'docs' // Output build to a folder named 'docs'
+  // },
   base: '/indigenous-map/', // add this before refs to assets in final URL
 });

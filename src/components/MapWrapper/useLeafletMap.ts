@@ -16,6 +16,7 @@ import {
   getPolygonArea,
   setMarkersVisibility,
   setMarkersSize,
+  addScaleControl,
 } from "./mapUtils";
 import { MarkerMeta, Nation } from "../../shared/types";
 import { useMapStore } from "../../shared/store";
@@ -63,9 +64,10 @@ export const useLeafletMap = (
     sanityCheckGeoJson(geoJson);
     const fixedGeoJson = closeGeoJsonRings(geoJson);
 
-    // Add controls + layers
+    // Add controls + layers. Order from bottom to top
     addCoordsControl(map);
     addZoomControl(map);
+    addScaleControl(map);
 
     // Add community markers
     const { clusterGroup, allMarkers } = addNationLayers(map, fixedGeoJson);

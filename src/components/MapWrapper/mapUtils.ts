@@ -53,6 +53,11 @@ export const addZoomControl = (map: L.Map) => {
   });
 };
 
+export const addScaleControl = (map: L.Map) => {
+  const scaleControl = new L.Control.Scale({ position: "bottomleft", imperial: false });
+  scaleControl.addTo(map);
+};
+
 export const addNationLayers = (map: L.Map, data: GeoJson) => {
   // Global tooltip for the whole map (prevents multiple competing tooltips)
   const globalTooltip = L.tooltip({
