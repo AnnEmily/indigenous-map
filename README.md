@@ -55,6 +55,9 @@ Government of Quebec
 Government of Ontario  
 [Ontario First Nations Directory](https://chiefs-of-ontario.org/resources/map/)
 
+Geo.ca  
+[Indigenous population of Canada](https://geo.ca/society/indigenous-population-of-canada/)
+
 Unrecognized NunatuKavut  
 [NunatuKavut Map Tour](https://www.google.com/maps/d/viewer?mid=1XtvACpsHbaX53Hp7ZohDR3AiyUoBYKU&femb=1&ll=54.418062502730145%2C-60.496367379033586&z=6)
 
